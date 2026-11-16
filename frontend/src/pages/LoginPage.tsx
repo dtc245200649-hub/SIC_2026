@@ -139,7 +139,46 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-800 text-center">
+          {/* Quick Fill Test Accounts */}
+          <div className="mt-5 pt-4 border-t border-slate-800/80">
+            <span className="text-[11px] font-semibold text-slate-400 block mb-2 text-center uppercase tracking-wider">
+              Tài khoản mẫu thử nghiệm (Click để điền nhanh):
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setUsernameOrEmail('admin');
+                  setPassword('AdminPassword123!');
+                }}
+                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-brand-500/50 text-[11px] text-brand-400 font-medium transition hover:bg-slate-800"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUsernameOrEmail('researcher');
+                  setPassword('ResearcherPassword123!');
+                }}
+                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-sky-500/50 text-[11px] text-sky-400 font-medium transition hover:bg-slate-800"
+              >
+                Researcher
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUsernameOrEmail('analyst');
+                  setPassword('AnalystPassword123!');
+                }}
+                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-amber-500/50 text-[11px] text-amber-400 font-medium transition hover:bg-slate-800"
+              >
+                Analyst
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 text-center">
             <p className="text-xs text-slate-400">
               Chưa có tài khoản nghiên cứu viên?{' '}
               <Link to="/register" className="text-brand-400 hover:underline font-medium">
