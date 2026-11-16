@@ -1,12 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
+from contextlib import asynccontextmanager
 
 from app.config import settings
+from app.db.base import Base
+from app.db.session import engine
+import app.models  # Đăng ký toàn bộ 17 models với SQLAlchemy Base
+from app.api.v1.router import api_v1_router
 
 
 def create_app() -> FastAPI:
     """Khởi tạo ứng dụng FastAPI với đầy đủ cấu hình middleware và routes."""
+    # Đảm bảo các bảng cơ sở dữ liệu được khởi tạo
+    Base.metadata.create_all(bind=engine)
+
     app = FastAPI(
         title=settings.APP_NAME,
         description="Nền tảng học sâu đa phương thức có khả năng giải thích trong phát hiện tin giả và phân tích mạng xã hội.",
@@ -22,6 +30,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Đăng ký API Router v1
+    app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
     @app.get("/", tags=["General"])
     def root():
