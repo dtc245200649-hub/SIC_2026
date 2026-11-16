@@ -2,6 +2,7 @@
 *(Explainable Multimodal Misinformation Detection & Social Impact Analysis)*
 
 **Tác giả / GitHub:** [AQuan-kernox](https://github.com/AQuan-kernox)  
+**Repository:** [https://github.com/AQuan-kernox/DUANSIC](https://github.com/AQuan-kernox/DUANSIC)  
 **Đề tài:** Học sâu đa phương thức có khả năng giải thích trong phát hiện thông tin sai lệch và phân tích tác động xã hội trên mạng xã hội Việt Nam.
 
 ---
