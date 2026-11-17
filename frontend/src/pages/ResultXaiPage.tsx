@@ -3,10 +3,9 @@ import { BrainCircuit, Info, Sparkles, CheckCircle2, AlertTriangle, Eye, Layers 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 
 const modalityWeights = [
-  { name: 'Văn bản (PhoBERT)', weight: 0.42, color: '#38bdf8' },
-  { name: 'Thị giác (ViT)', weight: 0.38, color: '#f59e0b' },
-  { name: 'Âm thanh (Whisper)', weight: 0.12, color: '#a855f7' },
-  { name: 'Đồ thị lan truyền (GNN)', weight: 0.08, color: '#10b981' },
+  { name: 'Văn bản (PhoBERT)', weight: 0.48, color: '#38bdf8' },
+  { name: 'Thị giác (ViT)', weight: 0.42, color: '#f59e0b' },
+  { name: 'Đồ thị lan truyền (GNN)', weight: 0.10, color: '#10b981' },
 ];
 
 const tokenAttributions = [

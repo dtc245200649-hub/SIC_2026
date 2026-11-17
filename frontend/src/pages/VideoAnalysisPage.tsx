@@ -23,8 +23,8 @@ export const VideoAnalysisPage: React.FC = () => {
         predicted_label: 'SAI_SU_THAT',
         confidence: 0.91,
         keyframes_count: 5,
-        audio_transcript: 'Kêu gọi khẩn cấp toàn dân rút tiền khỏi các tổ chức tài chính...',
-        findings: 'Âm thanh là giọng đọc tạo bằng trí tuệ nhân tạo (AI Voice Clone) không khớp khẩu hình và chuyển động môi trong các keyframes.',
+        temporal_analysis: 'Phát hiện sự xáo trộn chuỗi khung hình (frame temporal inconsistency) và dấu hiệu deepfake chèn mặt (face-swapping).',
+        findings: 'Các khung hình đại diện (Keyframes 2, 4) chứa vết ghép điểm ảnh (boundary artifacts) từ thuật toán sinh ảnh nhân tạo (Generative AI).',
       });
       setAnalyzing(false);
     }, 2000);
@@ -40,7 +40,7 @@ export const VideoAnalysisPage: React.FC = () => {
           <h2 className="text-xl font-bold text-white">Phân tích Video & Trích xuất Keyframes</h2>
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Trích xuất khung hình đại diện (Keyframes), phân tích chuỗi thời gian kết hợp luồng âm thanh phiên âm. Tối ưu chạy nhẹ nhàng trên PC.
+          Trích xuất khung hình đại diện (Keyframes), phân tích chuỗi chuyển động thời gian bằng OpenCV & Video Transformer. Tối ưu chạy nhẹ nhàng trên PC.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export const VideoAnalysisPage: React.FC = () => {
             className="w-full py-3 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-medium text-xs shadow-lg shadow-pink-600/25 flex items-center justify-center gap-2 transition disabled:opacity-40"
           >
             {analyzing ? (
-              <span>Đang trích xuất Keyframes bằng OpenCV & chuyển âm thanh...</span>
+              <span>Đang trích xuất Keyframes bằng OpenCV & phân tích đặc trưng thị giác...</span>
             ) : (
               <>
                 <span>Bắt đầu phân tích Video</span>
@@ -92,9 +92,9 @@ export const VideoAnalysisPage: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
               <h4 className="text-xs font-semibold text-slate-200 mb-1 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-pink-400" />
-                Văn bản bóc băng từ âm thanh video (Whisper STT):
+                Phân tích chuỗi thời gian (Temporal Inconsistency):
               </h4>
-              <p className="text-xs text-slate-300 italic">"{result.audio_transcript}"</p>
+              <p className="text-xs text-slate-300 italic">{result.temporal_analysis}</p>
             </div>
           </div>
         )}

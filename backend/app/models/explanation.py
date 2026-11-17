@@ -22,7 +22,7 @@ class Explanation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     result_id: Mapped[int] = mapped_column(Integer, ForeignKey("analysis_results.id", ondelete="CASCADE"), nullable=False, index=True)
     xai_method: Mapped[str] = mapped_column(String(50), nullable=False)  # INTEGRATED_GRADIENTS, GRAD_CAM, LIME, ATTENTION, EVIDENCE
-    target_modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO, AUDIO, MULTIMODAL
+    target_modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO, MULTIMODAL
     explanation_json: Mapped[str] = mapped_column(Text, nullable=False)  # Dữ liệu giải thích có cấu trúc (Token importance, bounding boxes, v.v.)
     summary_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Tóm tắt lý do bằng ngôn ngữ tự nhiên
     created_at: Mapped[datetime] = mapped_column(

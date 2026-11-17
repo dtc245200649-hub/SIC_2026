@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Upload, FileText, Image as ImageIcon, Video, Mic, ArrowRight, AlertCircle, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Layers, Upload, FileText, Image as ImageIcon, Video, ArrowRight, AlertCircle, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export const MultimodalAnalysisPage: React.FC = () => {
   const [textContent, setTextContent] = useState('');
@@ -52,7 +52,7 @@ export const MultimodalAnalysisPage: React.FC = () => {
           <h2 className="text-xl font-bold text-white">Phân tích Thông tin Đa phương thức (Multimodal Fusion)</h2>
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Tiếp nhận đồng thời văn bản, hình ảnh, video hoặc âm thanh để đánh giá mức độ tương thích và phát hiện tin giả qua Cross-modal Co-Attention.
+          Tiếp nhận đồng thời văn bản, hình ảnh hoặc video để đánh giá mức độ tương thích và phát hiện tin giả qua Cross-modal Co-Attention.
         </p>
       </div>
 
@@ -82,12 +82,12 @@ export const MultimodalAnalysisPage: React.FC = () => {
             <div>
               <label className="block text-xs font-semibold text-slate-200 mb-2 flex items-center gap-1.5">
                 <Upload className="w-4 h-4 text-brand-400" />
-                Tệp Đa phương tiện Kèm theo (Ảnh, Video hoặc Âm thanh)
+                Tệp Đa phương tiện Kèm theo (Ảnh hoặc Video)
               </label>
               <div className="border-2 border-dashed border-slate-700/80 hover:border-brand-500/50 rounded-2xl p-6 text-center bg-slate-900/40 transition cursor-pointer relative">
                 <input
                   type="file"
-                  accept="image/*,video/*,audio/*"
+                  accept="image/*,video/*"
                   onChange={handleFileChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
@@ -105,7 +105,7 @@ export const MultimodalAnalysisPage: React.FC = () => {
                         Kéo thả tệp vào đây, hoặc click để tải lên
                       </p>
                       <p className="text-[11px] text-slate-400 mt-1">
-                        Hỗ trợ PNG, JPG, MP4, MP3, WAV (Tối đa 50MB)
+                        Hỗ trợ PNG, JPG, MP4, MKV (Tối đa 50MB)
                       </p>
                     </>
                   )}
@@ -118,7 +118,7 @@ export const MultimodalAnalysisPage: React.FC = () => {
               <span>Backbone Encoders:</span>
               <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">PhoBERT v2</span>
               <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">ViT Base</span>
-              <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">Whisper STT</span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">VideoMAE Temporal</span>
             </div>
 
             <button
