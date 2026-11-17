@@ -1,6 +1,6 @@
 export type PredictionLabel = 'CHINH_XAC' | 'GAY_HIEU_LAM' | 'SAI_SU_THAT' | 'CHUA_DU_THONG_TIN';
 
-export type ModalityType = 'TEXT' | 'IMAGE' | 'VIDEO' | 'MULTIMODAL';
+export type ModalityType = 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO' | 'MULTIMODAL';
 
 export interface ModalityScore {
   modality: ModalityType;

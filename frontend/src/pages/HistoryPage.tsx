@@ -6,7 +6,7 @@ const historyItems = [
   { id: 101, title: 'Tin giả: Đột biến giá vàng và lời kêu gọi rút tiền ngân hàng', modality: 'MULTIMODAL', prediction: 'SAI_SU_THAT', confidence: 0.94, date: '16/11/2026 20:30' },
   { id: 102, title: 'Thông cáo chính thức: Lịch thi tốt nghiệp THPT Quốc gia 2026', modality: 'TEXT', prediction: 'CHINH_XAC', confidence: 0.98, date: '16/11/2026 19:15' },
   { id: 103, title: 'Hình ảnh chỉnh sửa AI: Vỡ đập thủy điện miền Trung', modality: 'IMAGE', prediction: 'GAY_HIEU_LAM', confidence: 0.87, date: '16/11/2026 17:40' },
-  { id: 104, title: 'Video cắt ghép sai lệch bối cảnh phát ngôn chính sách đất đai', modality: 'VIDEO', prediction: 'SAI_SU_THAT', confidence: 0.89, date: '15/11/2026 21:05' },
+  { id: 104, title: 'Băng ghi âm cắt ghép phát ngôn lãnh đạo về chính sách đất đai', modality: 'AUDIO', prediction: 'CHUA_DU_THONG_TIN', confidence: 0.61, date: '15/11/2026 21:05' },
   { id: 105, title: 'Video tuyên truyền sai lệch về đợt đổi tiền mới', modality: 'VIDEO', prediction: 'SAI_SU_THAT', confidence: 0.92, date: '15/11/2026 14:20' },
 ];
 

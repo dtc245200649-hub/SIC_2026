@@ -23,7 +23,7 @@ class AnalysisSession(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="PENDING", index=True)  # PENDING, PROCESSING, COMPLETED, FAILED
-    primary_modality: Mapped[str] = mapped_column(String(50), default="MULTIMODAL")  # TEXT, IMAGE, VIDEO, MULTIMODAL
+    primary_modality: Mapped[str] = mapped_column(String(50), default="MULTIMODAL")  # TEXT, IMAGE, VIDEO, AUDIO, MULTIMODAL
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -41,7 +41,7 @@ class AnalysisSession(Base):
 
 class UploadedFile(Base):
     """
-    Tệp tin đa phương thức tải lên (văn bản, hình ảnh, video).
+    Tệp tin đa phương thức tải lên (văn bản, hình ảnh, video, âm thanh).
     """
     __tablename__ = "uploaded_files"
 
@@ -49,7 +49,7 @@ class UploadedFile(Base):
     session_id: Mapped[int] = mapped_column(Integer, ForeignKey("analysis_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
     file_path: Mapped[str] = mapped_column(String(500), nullable=False)
-    file_type: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO
+    file_type: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO, AUDIO
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -70,7 +70,7 @@ class ExtractedFeature(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     session_id: Mapped[int] = mapped_column(Integer, ForeignKey("analysis_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
-    modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO
+    modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO, AUDIO
     feature_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # Đường dẫn tới tệp vector numpy/pt
     feature_dim: Mapped[int] = mapped_column(Integer, nullable=False)  # Kích thước vector đặc trưng
     metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Thông tin trích xuất bổ sung
@@ -116,7 +116,7 @@ class ModalityPrediction(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     result_id: Mapped[int] = mapped_column(Integer, ForeignKey("analysis_results.id", ondelete="CASCADE"), nullable=False, index=True)
-    modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO
+    modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, VIDEO, AUDIO
     predicted_label: Mapped[str] = mapped_column(String(50), nullable=False)
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False)
     contribution_weight: Mapped[float] = mapped_column(Float, nullable=False)  # Trọng số đóng góp trong Gated Fusion

@@ -19,7 +19,7 @@ export const Navbar: React.FC = () => {
         </h1>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>PhoBERT + ViT + VideoMAE</span>
+          <span>PhoBERT + ViT + Whisper</span>
         </div>
       </div>
 

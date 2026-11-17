@@ -19,7 +19,7 @@ class ModelVersion(Base):
     __tablename__ = "model_versions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    model_name: Mapped[str] = mapped_column(String(100), nullable=False)  # PhoBERT, ViT, VideoMAE, MultimodalFusion, GAT
+    model_name: Mapped[str] = mapped_column(String(100), nullable=False)  # PhoBERT, ViT, Whisper, MultimodalFusion, GAT
     version_tag: Mapped[str] = mapped_column(String(50), nullable=False)  # v1.0.0, v1.1.0-colab
     modality: Mapped[str] = mapped_column(String(50), nullable=False)  # TEXT, IMAGE, MULTIMODAL, GNN
     checkpoint_path: Mapped[str] = mapped_column(String(500), nullable=False)

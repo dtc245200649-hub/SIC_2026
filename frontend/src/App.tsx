@@ -9,6 +9,7 @@ import { MultimodalAnalysisPage } from './pages/MultimodalAnalysisPage';
 import { TextAnalysisPage } from './pages/TextAnalysisPage';
 import { ImageAnalysisPage } from './pages/ImageAnalysisPage';
 import { VideoAnalysisPage } from './pages/VideoAnalysisPage';
+import { AudioAnalysisPage } from './pages/AudioAnalysisPage';
 import { ResultXaiPage } from './pages/ResultXaiPage';
 import { FactCheckPage } from './pages/FactCheckPage';
 import { SocialGraphPage } from './pages/SocialGraphPage';
@@ -37,6 +38,7 @@ export const App: React.FC = () => {
           <Route path="analysis/text" element={<TextAnalysisPage />} />
           <Route path="analysis/image" element={<ImageAnalysisPage />} />
           <Route path="analysis/video" element={<VideoAnalysisPage />} />
+          <Route path="analysis/audio" element={<AudioAnalysisPage />} />
           <Route path="results/xai" element={<ResultXaiPage />} />
           <Route path="fact-check" element={<FactCheckPage />} />
           <Route path="social-graph" element={<SocialGraphPage />} />

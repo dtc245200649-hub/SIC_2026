@@ -4,6 +4,7 @@ import {
   FileText,
   Image,
   Video,
+  Mic,
   Layers,
   CheckCircle2,
   AlertTriangle,
@@ -36,10 +37,11 @@ const trendData = [
 ];
 
 const modalityDistribution = [
-  { name: 'Đa phương thức (Multimodal)', value: 50, color: '#10b981' },
-  { name: 'Văn bản (Text)', value: 30, color: '#38bdf8' },
+  { name: 'Đa phương thức (Multimodal)', value: 45, color: '#10b981' },
+  { name: 'Văn bản (Text)', value: 25, color: '#38bdf8' },
   { name: 'Hình ảnh (Image)', value: 15, color: '#f59e0b' },
-  { name: 'Video & Keyframes', value: 5, color: '#ec4899' },
+  { name: 'Video & Keyframes', value: 10, color: '#ec4899' },
+  { name: 'Âm thanh (Audio)', value: 5, color: '#a855f7' },
 ];
 
 const recentAnalyses = [
@@ -72,11 +74,11 @@ const recentAnalyses = [
   },
   {
     id: 104,
-    title: 'Video dàn dựng tuyên truyền sai lệch về đợt đổi tiền mới',
-    modality: 'VIDEO',
-    prediction: 'SAI_SU_THAT',
-    confidence: 0.91,
-    inconsistency: 0.78,
+    title: 'Băng ghi âm cắt ghép phát ngôn lãnh đạo về chính sách đất đai',
+    modality: 'AUDIO',
+    prediction: 'CHUA_DU_THONG_TIN',
+    confidence: 0.61,
+    inconsistency: 0.40,
     date: 'Hôm qua',
   },
 ];
@@ -123,7 +125,7 @@ export const DashboardPage: React.FC = () => {
             Nền tảng Giám sát & Phát hiện Tin giả Mạng xã hội Việt Nam
           </h2>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Hệ thống phân tích đồng thời Văn bản (PhoBERT), Thị giác (ViT), Video (Keyframes) kết hợp cơ chế Cross-modal Attention và đối soát chứng cứ báo chí chính thống.
+            Hệ thống phân tích đồng thời Văn bản (PhoBERT), Thị giác (ViT), Giọng nói (Whisper) kết hợp cơ chế Cross-modal Attention và đối soát chứng cứ báo chí chính thống.
           </p>
         </div>
 
@@ -177,7 +179,7 @@ export const DashboardPage: React.FC = () => {
       {/* Quick Launch Analysis Tools */}
       <div className="glass-panel p-5 rounded-2xl">
         <h3 className="text-sm font-bold text-white mb-3">Lối tắt Phân tích theo Phương thức</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <Link
             to="/analysis/multimodal"
             className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-brand-600/15 border border-slate-700/60 hover:border-brand-500/40 transition group flex flex-col items-center text-center"
@@ -186,7 +188,7 @@ export const DashboardPage: React.FC = () => {
               <Layers className="w-5 h-5" />
             </div>
             <span className="text-xs font-semibold text-white">Đa phương thức</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">Text + Visual + Video</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">Text + Visual + Audio</span>
           </Link>
 
           <Link
@@ -220,6 +222,17 @@ export const DashboardPage: React.FC = () => {
             </div>
             <span className="text-xs font-semibold text-white">Video (Keyframes)</span>
             <span className="text-[10px] text-slate-400 mt-0.5">OpenCV Temporal</span>
+          </Link>
+
+          <Link
+            to="/analysis/audio"
+            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-purple-600/15 border border-slate-700/60 hover:border-purple-500/40 transition group flex flex-col items-center text-center"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
+              <Mic className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold text-white">Âm thanh (Audio)</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">Whisper STT</span>
           </Link>
         </div>
       </div>
