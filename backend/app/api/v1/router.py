@@ -1,7 +1,10 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import auth, fact_check
 
 api_v1_router = APIRouter()
 
 # Tích hợp module xác thực
 api_v1_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+
+# Tích hợp module kiểm chứng & Bằng chứng báo chí
+api_v1_router.include_router(fact_check.router, prefix="/fact-check", tags=["Fact-Checking & Evidence"])
