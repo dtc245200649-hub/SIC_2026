@@ -1,8 +1,8 @@
 # HỆ THỐNG PHÁT HIỆN THÔNG TIN SAI LỆCH ĐA PHƯƠNG THỨC TRÊN MẠNG XÃ HỘI VIỆT NAM
 *(Explainable Multimodal Misinformation Detection & Social Impact Analysis)*
 
-**Tác giả / GitHub:** [AQuan-kernox](https://github.com/AQuan-kernox)  
-**Repository:** [https://github.com/AQuan-kernox/DUANSIC](https://github.com/AQuan-kernox/DUANSIC)  
+**Tác giả / GitHub:** [dtc245200649-hub](https://github.com/dtc245200649-hub)  
+**Repository:** [https://github.com/dtc245200649-hub/SIC_2026](https://github.com/dtc245200649-hub/SIC_2026)  
 **Đề tài:** Học sâu đa phương thức có khả năng giải thích trong phát hiện thông tin sai lệch và phân tích tác động xã hội trên mạng xã hội Việt Nam.
 
 ---

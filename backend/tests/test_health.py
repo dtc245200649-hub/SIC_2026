@@ -13,7 +13,7 @@ def test_app_configuration():
 
 
 def test_root_endpoint():
-    """Kiểm tra root endpoint trả về thông tin tác giả AQuan-kernox."""
+    """Kiểm tra root endpoint trả về thông tin tác giả dtc245200649-hub."""
     # Tìm endpoint '/'
     root_endpoint = None
     for route in app.routes:
@@ -24,7 +24,7 @@ def test_root_endpoint():
     assert root_endpoint is not None, "Root endpoint '/' chưa được đăng ký."
     res = root_endpoint()
     assert res["status"] == "online"
-    assert res["author"] == "AQuan-kernox"
+    assert res["author"] == "dtc245200649-hub"
     assert res["version"] == "0.1.0"
 
 

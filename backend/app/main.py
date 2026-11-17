@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
         return {
             "name": settings.APP_NAME,
             "version": "0.1.0",
-            "author": "AQuan-kernox",
+            "author": "dtc245200649-hub",
             "environment": settings.APP_ENV,
             "status": "online",
             "docs_url": "/docs",
