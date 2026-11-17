@@ -12,7 +12,7 @@ Hệ thống là một nền tảng nghiên cứu kết hợp sản phẩm thự
 - **Xử lý Đa phương thức:** Tiếp nhận đồng thời Văn bản (Text), Hình ảnh (Image), Video (Keyframes), và Âm thanh (Audio).
 - **Học sâu & Dung hợp (Multimodal Fusion):** PhoBERT (Text), Vision Transformer ViT (Image/Video), Whisper (Audio STT), kết hợp qua cơ chế Cross-modal Attention và Reliability-aware Gated Fusion.
 - **Explainable AI (XAI):** Minh bạch hóa lý do dự đoán của mô hình qua Word Attribution, Visual Heatmap (Grad-CAM), và tỷ trọng đóng góp của từng phương thức.
-- **Kiểm chứng thông tin (Fact-Checking):** Truy xuất bằng chứng từ kho tri thức báo chí chính thống và đối soát phát biểu qua Natural Language Inference (NLI).
+- **Kiểm chứng thông tin (Fact-Checking):** Truy xuất bằng chứng từ kho tri thức báo chí chính thống (VnExpress, Tuổi Trẻ, Thanh Niên) qua RSS Feeds 24/7 và đối soát phát biểu qua Natural Language Inference (NLI).
 - **Phân tích mạng xã hội (GNN):** Xây dựng đồ thị lan truyền và phân tích tác động, tốc độ lan truyền bằng Graph Neural Networks (PyG).
 
 ---
@@ -20,7 +20,7 @@ Hệ thống là một nền tảng nghiên cứu kết hợp sản phẩm thự
 ## 2. Cấu trúc thư mục dự án
 ```text
 DUANNHOM/
-├── backend/            # API Gateway & Logic nghiệp vụ (FastAPI, SQLAlchemy, Alembic)
+├── backend/            # API Gateway & Logic nghiệp vụ (FastAPI, SQLAlchemy 2.0, Alembic)
 ├── ai_engine/          # Mô hình Học sâu, XAI, Fact-checking & GNN (PyTorch, PyG)
 ├── frontend/           # Giao diện người dùng (React, TypeScript, Vite, Tailwind CSS)
 ├── data/               # Dữ liệu mẫu kiểm thử, kho bằng chứng và đồ thị mô phỏng
@@ -32,10 +32,69 @@ DUANNHOM/
 
 ## 3. Lộ trình phát triển (8 Giai đoạn)
 - [x] **Giai đoạn 1: Khởi tạo** (Thiết kế kiến trúc, cấu trúc thư mục, môi trường Git)
-- [ ] **Giai đoạn 2: Backend & Database** (PostgreSQL, 17 Models, Auth JWT, Khóa tài khoản > 5 lần)
-- [ ] **Giai đoạn 3: Frontend** (React + Vite + Tailwind, 12 trang chức năng)
+- [x] **Giai đoạn 2: Backend & Database** (17 Models SQLAlchemy, Auth JWT, Khóa tài khoản > 5 lần, Seed dữ liệu)
+- [x] **Giai đoạn 3: Frontend** (React + Vite + Tailwind, 12 trang chức năng phân tích & đối soát)
+- [x] **Tích hợp RSS Báo chí Chính thống** (VnExpress, Tuổi Trẻ, Thanh Niên tự động nạp bài báo thật)
 - [ ] **Giai đoạn 4: AI Cơ bản** (PhoBERT, ViT, Keyframe Extraction, Whisper STT)
 - [ ] **Giai đoạn 5: AI Đa phương thức** (Cross-Modal Attention, Reliability-aware Fusion)
-- [ ] **Giai đoạn 6: XAI & Fact-Checking** (Giải thích mô hình, Đối soát NLI)
+- [ ] **Giai đoạn 6: XAI & Fact-Checking NLI** (Giải thích mô hình, Đối soát NLI)
 - [ ] **Giai đoạn 7: GNN & Lan truyền xã hội** (Cây lan truyền, GraphSAGE/GAT)
 - [ ] **Giai đoạn 8: Hoàn thiện & Docker** (Đóng gói Docker Compose, Test E2E)
+
+---
+
+## 4. Cấu trúc Phân nhánh Git (Git Branching Strategy)
+
+Dự án áp dụng mô hình chuẩn **Git Flow** với 5 loại nhánh chính:
+
+| Nhánh (*Branch*) | Mục đích |
+| :--- | :--- |
+| `main` | Phiên bản chính thức, ổn định (*Production-ready*) |
+| `develop` | Tích hợp các chức năng đang phát triển |
+| `feature/*` | Phát triển các chức năng mới theo từng module độc lập |
+| `fix/*` | Sửa lỗi phát sinh trong quá trình thử nghiệm |
+| `release/*` | Chuẩn bị và đóng gói phiên bản phát hành |
+
+```mermaid
+flowchart TD
+    main["main (Phiên bản chính thức)"]
+    develop["develop (Nhánh tích hợp trung tâm)"]
+
+    main <--> develop
+
+    subgraph Features["Các nhánh tính năng (feature/*)"]
+        F_Front["feature/frontend (Giao diện React)"]
+        F_Back["feature/backend (API FastAPI)"]
+        F_Text["feature/ai-text (Phân tích văn bản)"]
+        F_Img["feature/ai-image (Phân tích hình ảnh)"]
+        F_Multi["feature/multimodal (Kết hợp đa phương thức)"]
+        F_Fact["feature/fact-check (Kiểm chứng thông tin)"]
+        F_Gnn["feature/gnn (Phân tích mạng xã hội)"]
+        F_Xai["feature/xai (Giải thích AI)"]
+        F_Data["feature/data (Dữ liệu và tiền xử lý)"]
+        F_Dash["feature/dashboard (Thống kê và báo cáo)"]
+    end
+
+    develop --- F_Front
+    develop --- F_Back
+    develop --- F_Text
+    develop --- F_Img
+    develop --- F_Multi
+    develop --- F_Fact
+    develop --- F_Gnn
+    develop --- F_Xai
+    develop --- F_Data
+    develop --- F_Dash
+```
+
+### Hướng dẫn chuyển đổi nhánh làm việc:
+```bash
+# Xem danh sách tất cả các nhánh
+git branch -a
+
+# Chuyển sang nhánh phát triển bất kỳ:
+git checkout develop
+git checkout feature/frontend
+git checkout feature/backend
+git checkout feature/multimodal
+```
