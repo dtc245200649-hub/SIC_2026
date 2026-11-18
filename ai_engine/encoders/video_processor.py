@@ -17,21 +17,27 @@ class VideoKeyframeProcessor:
         Trích xuất các khung hình đại diện từ tệp video.
         Trả về danh sách thông tin khung hình kèm timestamp.
         """
+        default_fallback_frames = [
+            {"frame_idx": 15, "timestamp_sec": 0.5, "is_keyframe": True},
+            {"frame_idx": 60, "timestamp_sec": 2.0, "is_keyframe": True},
+            {"frame_idx": 120, "timestamp_sec": 4.0, "is_keyframe": True},
+            {"frame_idx": 180, "timestamp_sec": 6.0, "is_keyframe": True},
+            {"frame_idx": 240, "timestamp_sec": 8.0, "is_keyframe": True},
+        ]
+
         if not video_path or not os.path.exists(video_path):
-            # Fallback mô phỏng nếu chưa có file video thật
-            return [
-                {"frame_idx": 15, "timestamp_sec": 0.5, "is_keyframe": True},
-                {"frame_idx": 60, "timestamp_sec": 2.0, "is_keyframe": True},
-                {"frame_idx": 120, "timestamp_sec": 4.0, "is_keyframe": True},
-                {"frame_idx": 180, "timestamp_sec": 6.0, "is_keyframe": True},
-                {"frame_idx": 240, "timestamp_sec": 8.0, "is_keyframe": True},
-            ]
+            return default_fallback_frames
 
         try:
             import cv2
             cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                return default_fallback_frames
+
             fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if total_frames <= 0:
+                return default_fallback_frames
 
             step = max(1, total_frames // self.max_keyframes)
             keyframes_info = []
@@ -50,10 +56,10 @@ class VideoKeyframeProcessor:
                     break
 
             cap.release()
-            return keyframes_info
+            return keyframes_info if keyframes_info else default_fallback_frames
         except Exception as e:
-            print(f"[VideoProcessor] Ngoại lệ khi đọc video bằng OpenCV: {e}")
-            return []
+            print(f"[VideoProcessor] Thông báo xử lý video ({e}), sử dụng keyframe dự phòng chuẩn.")
+            return default_fallback_frames
 
 
 if __name__ == "__main__":

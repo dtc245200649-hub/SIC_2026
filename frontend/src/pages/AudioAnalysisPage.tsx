@@ -1,33 +1,66 @@
 import React, { useState } from 'react';
-import { Mic, Upload, ArrowRight, Volume2 } from 'lucide-react';
+import { Mic, Volume2, ArrowRight, RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import api from '../services/api';
 
 export const AudioAnalysisPage: React.FC = () => {
   const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedAudio(e.target.files[0]);
       setResult(null);
+      setError(null);
     }
   };
 
-  const handleAnalyze = (e: React.FormEvent) => {
+  const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAudio) return;
 
     setAnalyzing(true);
-    setTimeout(() => {
-      setResult({
-        predicted_label: 'CHUA_DU_THONG_TIN',
-        confidence: 0.65,
-        transcript: 'Theo nguồn tin nội bộ chưa được xác thực, việc thay đổi tiền tệ sẽ diễn ra trong tuần này...',
-        audio_features: 'Tần số pitch ổn định bất thường, nghi ngờ giọng đọc Text-to-Speech (TTS).',
-        model: 'openai/whisper-tiny + Librosa',
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedAudio);
+      formData.append('title', `Âm thanh: ${selectedAudio.name}`);
+
+      const response = await api.post('/analysis/audio', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+      setResult(response.data);
+    } catch (err: any) {
+      console.error('Lỗi khi phân tích âm thanh:', err);
+      setError(err.response?.data?.detail || 'Không thể kết nối đến máy chủ AI.');
+    } finally {
       setAnalyzing(false);
-    }, 1500);
+    }
+  };
+
+  const getLabelBadge = (label: string) => {
+    switch (label) {
+      case 'SAI_SU_THAT':
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-xs">
+            <AlertTriangle className="w-3.5 h-3.5" /> Giả mạo giọng nói (Deepfake Voice)
+          </span>
+        );
+      case 'CHINH_XAC':
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Giọng nói thật
+          </span>
+        );
+      default:
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-xs">
+            <ShieldCheck className="w-3.5 h-3.5" /> Cần đối chiếu thêm
+          </span>
+        );
+    }
   };
 
   return (
@@ -59,43 +92,79 @@ export const AudioAnalysisPage: React.FC = () => {
                 <p className="text-xs text-purple-400 font-semibold">{selectedAudio.name} ({(selectedAudio.size / 1024 / 1024).toFixed(2)} MB)</p>
               ) : (
                 <>
-                  <p className="text-xs text-slate-300 font-medium">Tải tệp âm thanh lên (MP3, WAV, M4A, OGG)</p>
-                  <p className="text-[11px] text-slate-400 mt-1">Hỗ trợ nhận diện giọng nói đa vùng miền tiếng Việt</p>
+                  <p className="text-xs text-slate-300 font-medium">Tải tệp âm thanh lên để phân tích</p>
+                  <p className="text-[11px] text-slate-400 mt-1">MP3, WAV, M4A, OGG, FLAC</p>
                 </>
               )}
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={analyzing || !selectedAudio}
-            className="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 transition disabled:opacity-40"
-          >
-            {analyzing ? (
-              <span>Đang nhận diện giọng nói bằng Whisper...</span>
-            ) : (
-              <>
-                <span>Bắt đầu phân tích Âm thanh</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              Mô hình: openai/whisper-tiny + Librosa MFCC & Mel-spectrogram
+            </span>
+            <button
+              type="submit"
+              disabled={analyzing || !selectedAudio}
+              className="py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs shadow-lg shadow-purple-600/25 flex items-center gap-2 transition disabled:opacity-40"
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Đang phân tích âm học...</span>
+                </>
+              ) : (
+                <>
+                  <span>Bắt đầu phân tích âm thanh</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
         </form>
 
+        {error && (
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+            {error}
+          </div>
+        )}
+
         {result && (
-          <div className="pt-6 border-t border-slate-800 space-y-4">
-            <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200">
-              <span className="text-sm font-bold block mb-1">Dự đoán: Chưa đủ thông tin kết luận</span>
-              <p className="text-xs text-slate-400">{result.audio_features}</p>
+          <div className="pt-6 border-t border-slate-800 space-y-4 animate-fadeIn">
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-700 flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="text-[11px] text-slate-400 font-mono mb-1">MÃ PHIÊN: #{result.session_id}</p>
+                <div className="flex items-center gap-3">
+                  {getLabelBadge(result.predicted_label)}
+                  <span className="text-xs text-slate-300">
+                    Độ tin cậy: <strong className="text-white font-mono">{(result.confidence_score * 100).toFixed(1)}%</strong>
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs text-purple-400 font-mono">{result.model_name}</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-              <h4 className="text-xs font-semibold text-slate-200 mb-1">Bản ghi lời nói (Transcript):</h4>
-              <p className="text-xs text-slate-300 leading-relaxed italic">"{result.transcript}"</p>
+            <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
+              <strong className="text-white text-xs block">Kết luận âm học:</strong>
+              <p className="text-xs text-slate-300">{result.summary}</p>
             </div>
+
+            {result.audio_transcript && (
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                <span className="text-xs font-semibold text-slate-200 block flex items-center gap-1.5">
+                  <Mic className="w-3.5 h-3.5 text-purple-400" />
+                  Kết quả nhận dạng tiếng nói (Whisper STT):
+                </span>
+                <p className="text-xs text-slate-200 italic bg-slate-950/60 p-3 rounded-lg border border-slate-800 leading-relaxed">
+                  "{result.audio_transcript}"
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 };
+export default AudioAnalysisPage;
