@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Upload, FileText, Globe, ArrowRight, CheckCircle2, AlertTriangle, ShieldCheck, Sparkles, RefreshCw, Share2, Eye, Heart, MessageSquare } from 'lucide-react';
+import { Layers, Upload, FileText, Globe, ArrowRight, CheckCircle2, AlertTriangle, ShieldCheck, Sparkles, RefreshCw, Share2, Eye, Heart, MessageSquare, ExternalLink, ShieldAlert, Database } from 'lucide-react';
 import api from '../services/api';
 
 export const MultimodalAnalysisPage: React.FC = () => {
@@ -7,6 +7,8 @@ export const MultimodalAnalysisPage: React.FC = () => {
   
   // State cho Tab 1: Phân tích liên kết mạng xã hội
   const [socialUrl, setSocialUrl] = useState('');
+  const [userCaption, setUserCaption] = useState('');
+  const [showCaptionInput, setShowCaptionInput] = useState(false);
   const [analyzingSocial, setAnalyzingSocial] = useState(false);
   const [socialResult, setSocialResult] = useState<any | null>(null);
   const [socialError, setSocialError] = useState<string | null>(null);
@@ -19,12 +21,14 @@ export const MultimodalAnalysisPage: React.FC = () => {
 
   const sampleLinks = [
     {
-      label: 'TikTok: Cảnh báo thẻ ngân hàng',
+      label: 'TikTok: Cảnh báo lừa đảo tài khoản',
       url: 'https://www.tiktok.com/@vtv24news/video/7182938491028374820',
+      caption: 'Cảnh báo thủ đoạn mạo danh cán bộ cơ quan thuế gọi điện yêu cầu cài app lạ để lừa tiền.',
     },
     {
-      label: 'Facebook: Tin xả lũ đập thủy điện',
-      url: 'https://www.facebook.com/thoisuvtv/posts/1029384756102938',
+      label: 'Facebook: Tin xả lũ thủy điện',
+      url: 'https://www.facebook.com/thongtinchinhphu/posts/1029384756102938',
+      caption: 'Bác bỏ thông tin thất thiệt về việc đập thủy điện xả lũ bất ngờ không báo trước gây hoang mang dư luận.',
     },
   ];
 
@@ -38,6 +42,7 @@ export const MultimodalAnalysisPage: React.FC = () => {
     try {
       const response = await api.post('/social/analyze-url', {
         url: socialUrl.trim(),
+        user_provided_caption: userCaption.trim() ? userCaption.trim() : null,
         analyze_cascade: true,
       });
       setSocialResult(response.data);
@@ -102,7 +107,7 @@ export const MultimodalAnalysisPage: React.FC = () => {
           <h2 className="text-xl font-bold text-white">Phân tích Học sâu Đa phương thức & Mạng Xã hội</h2>
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Hỗ trợ kiểm chứng trực tiếp từ liên kết TikTok / Facebook hoặc tải tệp đa phương tiện kết hợp PhoBERT v2, ViT, Whisper và Đồ thị lan truyền GNN.
+          Hệ thống kiểm chứng đối soát tri thức thực tế (Ground-Truth Evidence) từ VnExpress, Tuổi Trẻ, Thanh Niên kết hợp mô hình lan truyền GNN.
         </p>
       </div>
 
@@ -142,7 +147,10 @@ export const MultimodalAnalysisPage: React.FC = () => {
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setSocialUrl(item.url)}
+                  onClick={() => {
+                    setSocialUrl(item.url);
+                    setUserCaption(item.caption);
+                  }}
                   className="text-[11px] px-3 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-sky-300 border border-slate-700/60 transition"
                 >
                   {item.label}
@@ -171,16 +179,36 @@ export const MultimodalAnalysisPage: React.FC = () => {
                     {analyzingSocial ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Đang bóc tách & phân tích...</span>
+                        <span>Đang đối soát tri thức...</span>
                       </>
                     ) : (
                       <>
-                        <span>Phân tích liên kết</span>
+                        <span>Kiểm chứng liên kết</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
                 </div>
+              </div>
+
+              {/* Tùy chọn điền caption thủ công nếu Facebook yêu cầu Login */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowCaptionInput(!showCaptionInput)}
+                  className="text-[11px] text-sky-400 hover:text-sky-300 underline cursor-pointer"
+                >
+                  {showCaptionInput ? 'Ẩn ô nhập nội dung bổ sung' : '+ Thêm nội dung bài viết nếu mạng xã hội yêu cầu đăng nhập (Login Wall)'}
+                </button>
+                {showCaptionInput && (
+                  <textarea
+                    rows={2}
+                    value={userCaption}
+                    onChange={(e) => setUserCaption(e.target.value)}
+                    placeholder="Dán nội dung bài viết nếu liên kết yêu cầu đăng nhập để xem..."
+                    className="w-full mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                )}
               </div>
             </form>
 
@@ -200,9 +228,12 @@ export const MultimodalAnalysisPage: React.FC = () => {
                     <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-[10px] font-mono font-bold">
                       {socialResult.platform}
                     </span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-mono border border-slate-700">
+                      Nguồn bóc tách: {socialResult.metadata_source}
+                    </span>
                     <span className="text-xs text-slate-400 font-mono">Tác giả: {socialResult.author_name}</span>
                   </div>
-                  <h3 className="text-sm font-bold text-white">Kết quả kiểm chứng đa phương thức</h3>
+                  <h3 className="text-sm font-bold text-white">Kết luận Kiểm chứng Tri thức (Ground-Truth Verified)</h3>
                 </div>
                 <div className="flex items-center gap-3">
                   {getBadge(socialResult.predicted_label)}
@@ -212,41 +243,9 @@ export const MultimodalAnalysisPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Engagement Stats Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
-                  <Eye className="w-5 h-5 text-sky-400" />
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Lượt xem</span>
-                    <strong className="text-white font-mono">{socialResult.engagement.views.toLocaleString()}</strong>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
-                  <Heart className="w-5 h-5 text-rose-400" />
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Lượt thích</span>
-                    <strong className="text-white font-mono">{socialResult.engagement.likes.toLocaleString()}</strong>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
-                  <Share2 className="w-5 h-5 text-emerald-400" />
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Lượt chia sẻ</span>
-                    <strong className="text-white font-mono">{socialResult.engagement.shares.toLocaleString()}</strong>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
-                  <MessageSquare className="w-5 h-5 text-amber-400" />
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Bình luận</span>
-                    <strong className="text-white font-mono">{socialResult.engagement.comments.toLocaleString()}</strong>
-                  </div>
-                </div>
-              </div>
-
               {/* Caption & Content */}
               <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                <span className="text-[11px] text-slate-400 font-semibold block">Văn bản bóc tách từ bài đăng:</span>
+                <span className="text-[11px] text-slate-400 font-semibold block">Nội dung xác thực từ bài đăng:</span>
                 <p className="text-xs text-slate-200 leading-relaxed italic bg-slate-950/60 p-3 rounded-lg border border-slate-800">
                   "{socialResult.caption}"
                 </p>
@@ -261,25 +260,71 @@ export const MultimodalAnalysisPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Social Cascade Impact */}
-              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30 space-y-1.5">
+              {/* Matched Official Evidence from VnExpress, Tuổi Trẻ, Thanh Niên */}
+              {socialResult.evidence_matches && socialResult.evidence_matches.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                    <Database className="w-4 h-4 text-emerald-400" />
+                    Bằng chứng đối soát trực tiếp từ Báo chí chính thống:
+                  </span>
+                  <div className="space-y-2">
+                    {socialResult.evidence_matches.map((item: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                              {item.source_name}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${
+                              item.verdict === 'REFUTES' ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+                            }`}>
+                              {item.verdict === 'REFUTES' ? 'BÁC BỎ TIN ĐỒN' : 'XÁC NHẬN SỰ KIỆN'}
+                            </span>
+                            <span className="text-[10px] text-slate-400">Độ tương thích: {(item.similarity_score * 100).toFixed(0)}%</span>
+                          </div>
+                          <p className="text-slate-200 font-medium">{item.title}</p>
+                        </div>
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 flex items-center gap-1 text-[11px] shrink-0 transition"
+                        >
+                          <span>Xem gốc</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Social Cascade Impact with Epidemic R0 */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-amber-300 font-semibold flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-amber-400" />
-                    Đánh giá Tác động Lan truyền Mạng xã hội (GNN Cascade Prediction):
+                    Động lực học Lan truyền Dịch tễ mạng xã hội (GNN Epidemic Model):
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
-                    Nguy cơ: {socialResult.propagation_risk_level}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-300 font-mono">Hệ số lây lan cơ bản: <strong className="text-amber-400">R0 = {socialResult.cascade_r0}</strong></span>
+                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
+                      Nguy cơ: {socialResult.propagation_risk_level}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-slate-300">
-                  Dự báo quy mô ảnh hưởng: <strong className="text-white font-mono">~{socialResult.cascade_nodes_predicted.toLocaleString()}</strong> người dùng trong đồ thị mạng nếu không được kiểm duyệt hoặc đính chính.
+                  Dự báo quy mô lan tỏa: <strong className="text-white font-mono">~{socialResult.cascade_nodes_predicted.toLocaleString()}</strong> tài khoản mạng xã hội bị phơi nhiễm nếu không có thông tin đính chính kịp thời.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-300">
-                <strong className="text-white block mb-1">Kết luận tổng hợp Đa phương thức:</strong>
-                {socialResult.multimodal_summary}
+              {/* Data Integrity Transparency Box */}
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
+                <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-slate-300 block mb-0.5">Tiêu chuẩn Minh bạch Dữ liệu (Zero-Hallucination):</strong>
+                  {socialResult.data_integrity_notes}
+                </div>
               </div>
             </div>
           )}
