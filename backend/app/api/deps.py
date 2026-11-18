@@ -72,3 +72,25 @@ def get_current_active_superuser(
             detail="Bạn không có quyền quản trị viên cấp cao để thực hiện hành động này.",
         )
     return current_user
+
+
+def get_current_user_optional(
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(reusable_oauth2),
+) -> Optional[User]:
+    """
+    Dependency lấy User nếu có token hợp lệ, nếu không có token thì trả về None.
+    Hữu ích cho các endpoint công khai hoặc extension trình duyệt.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        if not payload:
+            return None
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            return None
+        return UserService.get_by_id(db, int(user_id_str))
+    except Exception:
+        return None

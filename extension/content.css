@@ -1,0 +1,98 @@
+/* SIC Misinformation Detector - Content Styles */
+
+.sic-modal-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  animation: sicFadeIn 0.25s ease-out;
+}
+
+@keyframes sicFadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sic-modal-card {
+  width: 340px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  padding: 16px;
+}
+
+.sic-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sic-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.sic-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.sic-close-btn:hover {
+  color: #ffffff;
+}
+
+.sic-verdict-banner {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sic-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 8px 0 0 0;
+}
+
+.sic-risk {
+  font-size: 11px;
+  color: #f59e0b;
+  margin-top: 6px;
+}
+
+.sic-modal-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #1e293b;
+  text-align: right;
+}
+
+.sic-btn-link {
+  font-size: 11px;
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sic-btn-link:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIC 2026 Detector</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 350px;
+      background: #090d16;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .title { font-size: 13px; font-weight: 700; }
+    .subtitle { font-size: 10px; color: #94a3b8; }
+    .input-label { font-size: 11px; color: #cbd5e1; margin-bottom: 6px; display: block; }
+    input[type="text"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #fff;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    input[type="text"]:focus { border-color: #38bdf8; }
+    .quick-btns { display: flex; gap: 6px; margin-bottom: 12px; }
+    .btn-quick {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 10px;
+      padding: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-quick:hover { background: #334155; color: #fff; }
+    .btn-submit {
+      width: 100%;
+      background: #0284c7;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      padding: 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #0369a1; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      display: none;
+    }
+    .badge-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .fake-badge { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .real-badge { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .check-badge { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .result-text { font-size: 11px; line-height: 1.4; color: #cbd5e1; }
+    .footer { margin-top: 12px; text-align: center; }
+    .footer a { font-size: 10px; color: #38bdf8; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-badge">SIC AI</div>
+    <div>
+      <div class="title">Kiểm chứng Tin giả Mạng xã hội</div>
+      <div class="subtitle">Hỗ trợ TikTok Video & Facebook Post</div>
+    </div>
+  </div>
+
+  <label class="input-label" for="socialUrl">Dán link TikTok hoặc Facebook:</label>
+  <input type="text" id="socialUrl" placeholder="https://www.tiktok.com/... hoặc https://facebook.com/..." />
+
+  <div class="quick-btns">
+    <button class="btn-quick" id="btnSampleTiktok">Mẫu TikTok</button>
+    <button class="btn-quick" id="btnSampleFb">Mẫu Facebook</button>
+    <button class="btn-quick" id="btnCurrentTab">Tab hiện tại</button>
+  </div>
+
+  <button class="btn-submit" id="btnAnalyze">Phân tích với SIC AI</button>
+
+  <div class="result-box" id="resultBox">
+    <div id="badgeContainer"></div>
+    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;" id="confidenceText"></div>
+    <p class="result-text" id="summaryText"></p>
+    <div style="font-size: 10px; color: #f59e0b; margin-top: 6px;" id="riskText"></div>
+  </div>
+
+  <div class="footer">
+    <a href="http://localhost:5173" target="_blank">Mở Hệ thống SIC 2026 Dashboard ↗</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

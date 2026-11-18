@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "SIC Misinformation Detector - Kiểm chứng Tin giả Mạng xã hội",
+  "version": "1.0.0",
+  "description": "Tiện ích AI hỗ trợ phát hiện tin giả và nội dung gây hiểu lầm trên TikTok & Facebook bằng Học sâu Đa phương thức (PhoBERT + ViT + Whisper).",
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.facebook.com/*",
+    "*://*.tiktok.com/*",
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.facebook.com/*",
+        "*://*.tiktok.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ]
+}
