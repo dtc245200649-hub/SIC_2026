@@ -6,8 +6,7 @@ import {
   FileText,
   Image,
   Video,
-  BrainCircuit,
-  ShieldCheck,
+  Database,
   Share2,
   History,
   Users,
@@ -49,19 +48,14 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Giải thích & Bằng chứng',
+    title: 'Dữ liệu & Lan truyền',
     items: [
       {
-        name: 'Giải thích AI (XAI)',
-        path: '/results/xai',
-        icon: BrainCircuit,
-        tag: 'XAI',
-        tagColor: 'bg-sky-50 text-sky-800 border-sky-300',
-      },
-      {
-        name: 'Kiểm chứng Bằng chứng',
+        name: 'Kho dữ liệu',
         path: '/fact-check',
-        icon: ShieldCheck,
+        icon: Database,
+        tag: 'Dữ liệu',
+        tagColor: 'bg-sky-50 text-sky-800 border-sky-300',
       },
       {
         name: 'Phân tích tác động xã hội',

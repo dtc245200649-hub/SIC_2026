@@ -43,8 +43,9 @@ export const App: React.FC = () => {
           <Route path="analysis/image" element={<ImageAnalysisPage />} />
           <Route path="analysis/video" element={<VideoAnalysisPage />} />
           <Route path="analysis/audio" element={<Navigate to="/analysis/video" replace />} />
-          <Route path="results/xai" element={<ResultXaiPage />} />
+          <Route path="results/xai" element={<Navigate to="/checker" replace />} />
           <Route path="fact-check" element={<FactCheckPage />} />
+          <Route path="data" element={<FactCheckPage />} />
           <Route path="social-graph" element={<SocialGraphPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="users" element={<UserManagementPage />} />
