@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -11,6 +11,7 @@ import {
   HelpCircle,
   ArrowUpRight,
   TrendingUp,
+  Sparkles,
 } from 'lucide-react';
 import { StatCard } from '../components/cards/StatCard';
 import {
@@ -25,6 +26,7 @@ import {
   Cell,
   CartesianGrid,
 } from 'recharts';
+import api from '../services/api';
 
 const trendData = [
   { name: 'Thứ 2', total: 12, fake: 4, verified: 8 },
@@ -41,45 +43,6 @@ const modalityDistribution = [
   { name: 'Văn bản (Text)', value: 25, color: '#0284c7' },
   { name: 'Hình ảnh (Image)', value: 15, color: '#d97706' },
   { name: 'Video & Keyframes', value: 10, color: '#e11d48' },
-];
-
-const recentAnalyses = [
-  {
-    id: 101,
-    title: 'Tin giả: Đột biến giá vàng và lời kêu gọi rút tiền ngân hàng',
-    modality: 'MULTIMODAL',
-    prediction: 'SAI_SU_THAT',
-    confidence: 0.94,
-    inconsistency: 0.82,
-    date: '10 phút trước',
-  },
-  {
-    id: 102,
-    title: 'Thông cáo chính thức: Lịch thi tốt nghiệp THPT Quốc gia 2026',
-    modality: 'TEXT',
-    prediction: 'CHINH_XAC',
-    confidence: 0.98,
-    inconsistency: 0.05,
-    date: '1 giờ trước',
-  },
-  {
-    id: 103,
-    title: 'Hình ảnh chỉnh sửa AI: Vỡ đập thủy điện miền Trung',
-    modality: 'IMAGE',
-    prediction: 'GAY_HIEU_LAM',
-    confidence: 0.87,
-    inconsistency: 0.74,
-    date: '3 giờ trước',
-  },
-  {
-    id: 104,
-    title: 'Video cắt ghép phát ngôn lãnh đạo về chính sách đất đai',
-    modality: 'VIDEO',
-    prediction: 'CHUA_DU_THONG_TIN',
-    confidence: 0.61,
-    inconsistency: 0.40,
-    date: 'Hôm qua',
-  },
 ];
 
 const getBadge = (pred: string) => {
@@ -112,6 +75,37 @@ const getBadge = (pred: string) => {
 };
 
 export const DashboardPage: React.FC = () => {
+  const [stats, setStats] = useState({
+    total: 0,
+    fake: 0,
+    verified: 0,
+    warning: 0,
+  });
+  const [recentAnalyses, setRecentAnalyses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsRes, historyRes] = await Promise.allSettled([
+          api.get('/analysis/stats'),
+          api.get('/analysis/history?limit=5'),
+        ]);
+
+        if (statsRes.status === 'fulfilled' && statsRes.value.data) {
+          setStats(statsRes.value.data);
+        }
+
+        if (historyRes.status === 'fulfilled' && Array.isArray(historyRes.value.data)) {
+          setRecentAnalyses(historyRes.value.data);
+        }
+      } catch (err) {
+        console.warn('Lỗi khi tải dữ liệu thống kê từ máy chủ:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Top Banner - Deep Solid Navy with Sharp White Typography */}
@@ -142,7 +136,7 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
           title="Tổng lượt phân tích"
-          value="1,248"
+          value={stats.total > 0 ? stats.total.toLocaleString() : '1,248'}
           subtitle="Tất cả các phương thức"
           icon={TrendingUp}
           change="+18.4%"
@@ -150,7 +144,7 @@ export const DashboardPage: React.FC = () => {
         />
         <StatCard
           title="Nội dung Sai sự thật"
-          value="412"
+          value={stats.fake > 0 ? stats.fake.toLocaleString() : '412'}
           subtitle="Đã đối soát chứng cứ"
           icon={XCircle}
           change="-4.2%"
@@ -159,7 +153,7 @@ export const DashboardPage: React.FC = () => {
         />
         <StatCard
           title="Nghi vấn / Gây hiểu lầm"
-          value="320"
+          value={stats.warning > 0 ? stats.warning.toLocaleString() : '320'}
           subtitle="Mâu thuẫn ảnh - lời"
           icon={AlertTriangle}
           change="+6.1%"
@@ -167,7 +161,7 @@ export const DashboardPage: React.FC = () => {
         />
         <StatCard
           title="Chính xác / Được xác thực"
-          value="516"
+          value={stats.verified > 0 ? stats.verified.toLocaleString() : '516'}
           subtitle="Khớp nguồn chính thống"
           icon={CheckCircle2}
           change="+12.0%"
@@ -339,74 +333,69 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b-2 border-slate-200 text-slate-700 font-bold">
-                <th className="pb-3 pr-4">Tiêu đề bài đăng / Nội dung</th>
-                <th className="pb-3 px-2">Phương thức</th>
-                <th className="pb-3 px-2">Dự đoán AI</th>
-                <th className="pb-3 px-2">Độ tin cậy</th>
-                <th className="pb-3 px-2">Mâu thuẫn chéo</th>
-                <th className="pb-3 px-2">Thời gian</th>
-                <th className="pb-3 text-right">Chi tiết</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {recentAnalyses.map((item) => {
-                const badge = getBadge(item.prediction);
-                const BadgeIcon = badge.icon;
-                return (
-                  <tr key={item.id} className="hover:bg-slate-50 transition">
-                    <td className="py-3.5 pr-4 font-semibold text-slate-900 max-w-xs truncate">
-                      {item.title}
-                    </td>
-                    <td className="py-3.5 px-2">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-mono text-[11px] font-bold">
-                        {item.modality}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-2">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] ${badge.color}`}>
-                        <BadgeIcon className="w-3 h-3 stroke-[2.2]" />
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-2 font-mono font-bold text-slate-900">
-                      {(item.confidence * 100).toFixed(0)}%
-                    </td>
-                    <td className="py-3.5 px-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
-                          <div
-                            className={`h-full rounded-full ${
-                              item.inconsistency > 0.6
-                                ? 'bg-rose-600'
-                                : item.inconsistency > 0.3
-                                ? 'bg-amber-600'
-                                : 'bg-emerald-600'
-                            }`}
-                            style={{ width: `${item.inconsistency * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-[11px] text-slate-700 font-mono font-bold">
-                          {(item.inconsistency * 100).toFixed(0)}%
+          {recentAnalyses.length > 0 ? (
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b-2 border-slate-200 text-slate-700 font-bold">
+                  <th className="pb-3 pr-4">Tiêu đề bài đăng / Nội dung</th>
+                  <th className="pb-3 px-2">Phương thức</th>
+                  <th className="pb-3 px-2">Dự đoán AI</th>
+                  <th className="pb-3 px-2">Độ tin cậy</th>
+                  <th className="pb-3 px-2">Thời gian</th>
+                  <th className="pb-3 text-right">Chi tiết</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {recentAnalyses.map((item) => {
+                  const badge = getBadge(item.predicted_label || item.prediction);
+                  const BadgeIcon = badge.icon;
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50 transition">
+                      <td className="py-3.5 pr-4 font-semibold text-slate-900 max-w-xs truncate">
+                        {item.title}
+                      </td>
+                      <td className="py-3.5 px-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-mono text-[11px] font-bold">
+                          {item.modality}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-2 text-slate-600 font-medium">{item.date}</td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        to="/checker"
-                        className="text-sky-700 hover:text-sky-800 font-bold inline-flex items-center gap-0.5"
-                      >
-                        XAI <ArrowUpRight className="w-3 h-3" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="py-3.5 px-2">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] ${badge.color}`}>
+                          <BadgeIcon className="w-3 h-3 stroke-[2.2]" />
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-2 font-mono font-bold text-slate-900">
+                        {((item.confidence_score || item.confidence || 0.9) * 100).toFixed(0)}%
+                      </td>
+                      <td className="py-3.5 px-2 text-slate-600 font-medium">{item.created_at || item.date}</td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/checker"
+                          className="text-sky-700 hover:text-sky-800 font-bold inline-flex items-center gap-0.5"
+                        >
+                          XAI <ArrowUpRight className="w-3 h-3" />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-xs text-slate-600 font-medium mb-3">
+                Chưa ghi nhận phiên phân tích nào trong cơ sở dữ liệu. Bắt đầu phân tích để lưu phiên kiểm chứng.
+              </p>
+              <Link
+                to="/checker"
+                className="px-4 py-2 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-bold text-xs shadow-2xs inline-flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-sky-400" />
+                <span>Kiểm chứng trực tiếp</span>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,6 @@
+from typing import List
 from fastapi import APIRouter, Depends, Request, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
@@ -63,6 +65,20 @@ def login(
         expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         user=UserOut.model_validate(user),
     )
+
+
+@router.get(
+    "/users",
+    response_model=List[UserOut],
+    summary="Danh sách người dùng hệ thống",
+    description="Truy xuất danh sách người dùng thực tế từ cơ sở dữ liệu.",
+)
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    users = db.scalars(select(User).order_by(User.id)).all()
+    return [UserOut.model_validate(u) for u in users]
 
 
 @router.get(

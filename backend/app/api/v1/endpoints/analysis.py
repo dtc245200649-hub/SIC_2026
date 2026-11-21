@@ -122,3 +122,31 @@ def get_analysis_history(
         })
 
     return items
+
+
+@router.get(
+    "/stats",
+    summary="Thống kê phân tích thực tế từ CSDL",
+    description="Truy xuất số liệu phân tích thực tế được tính toán từ các phiên đã ghi nhận.",
+)
+def get_analysis_stats(
+    db: Session = Depends(get_db),
+):
+    from sqlalchemy import func
+    total = db.scalar(select(func.count(AnalysisSession.id))) or 0
+    fake_count = db.scalar(
+        select(func.count(AnalysisResult.id)).where(AnalysisResult.overall_prediction == "SAI_SU_THAT")
+    ) or 0
+    verified_count = db.scalar(
+        select(func.count(AnalysisResult.id)).where(AnalysisResult.overall_prediction == "CHINH_XAC")
+    ) or 0
+    warning_count = db.scalar(
+        select(func.count(AnalysisResult.id)).where(AnalysisResult.overall_prediction == "GAY_HIEU_LAM")
+    ) or 0
+
+    return {
+        "total": total,
+        "fake": fake_count,
+        "verified": verified_count,
+        "warning": warning_count,
+    }
