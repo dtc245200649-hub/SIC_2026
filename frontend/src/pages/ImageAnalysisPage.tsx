@@ -47,44 +47,44 @@ export const ImageAnalysisPage: React.FC = () => {
     switch (label) {
       case 'SAI_SU_THAT':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-xs">
-            <AlertTriangle className="w-3.5 h-3.5" /> Sai sự thật / Chỉnh sửa
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-100 text-rose-900 border-2 border-rose-400 font-black text-xs shadow-2xs">
+            <AlertTriangle className="w-4 h-4 text-rose-700 stroke-[2.5]" /> Sai sự thật / Chỉnh sửa
           </span>
         );
       case 'CHINH_XAC':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Ảnh Nguyên bản
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-900 border-2 border-emerald-400 font-black text-xs shadow-2xs">
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 stroke-[2.5]" /> Ảnh Nguyên bản
           </span>
         );
       default:
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-xs">
-            <ShieldCheck className="w-3.5 h-3.5" /> Cần giám định thêm
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 border-2 border-amber-400 font-black text-xs shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-amber-700 stroke-[2.5]" /> Cần giám định thêm
           </span>
         );
     }
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto pb-10">
       <div>
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono">
+        <div className="flex items-center gap-2.5">
+          <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border-2 border-amber-300 text-xs font-mono font-bold">
             CV MODULE
           </span>
-          <h2 className="text-xl font-bold text-white">Phân tích Hình ảnh (Vision Transformer ViT)</h2>
+          <h2 className="text-xl font-black text-slate-950">Phân tích Hình ảnh (Vision Transformer ViT)</h2>
         </div>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-600 font-medium mt-1">
           Trích xuất đặc trưng thị giác patch-based, phát hiện ảnh chỉnh sửa, ghép nối và xác định vùng nghi vấn.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         {/* Upload Form */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800">
+        <div className="bg-white p-6 rounded-2xl border-2 border-slate-300 shadow-xs flex flex-col justify-between">
           <form onSubmit={handleAnalyze} className="space-y-4">
-            <div className="border-2 border-dashed border-slate-700 hover:border-amber-500/50 rounded-2xl p-6 text-center bg-slate-900/40 relative cursor-pointer">
+            <div className="border-2 border-dashed border-slate-300 hover:border-amber-600 rounded-2xl p-6 text-center bg-slate-50 relative cursor-pointer transition">
               <input
                 type="file"
                 accept="image/*"
@@ -93,14 +93,14 @@ export const ImageAnalysisPage: React.FC = () => {
               />
               {previewUrl ? (
                 <div className="space-y-3">
-                  <img src={previewUrl} alt="Preview" className="max-h-56 mx-auto rounded-xl object-contain border border-slate-700" />
-                  <p className="text-xs text-amber-400 font-medium">Click để chọn ảnh khác</p>
+                  <img src={previewUrl} alt="Preview" className="max-h-56 mx-auto rounded-xl object-contain border-2 border-slate-300 shadow-2xs" />
+                  <p className="text-xs text-amber-800 font-bold">Click để chọn ảnh khác</p>
                 </div>
               ) : (
                 <div className="py-8">
-                  <ImageIcon className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-                  <p className="text-xs text-slate-300 font-medium">Tải ảnh lên để phân tích</p>
-                  <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, WEBP</p>
+                  <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-2.5" />
+                  <p className="text-xs text-slate-800 font-bold">Tải ảnh lên để phân tích</p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-1">PNG, JPG, WEBP</p>
                 </div>
               )}
             </div>
@@ -108,11 +108,11 @@ export const ImageAnalysisPage: React.FC = () => {
             <button
               type="submit"
               disabled={analyzing || !selectedImage}
-              className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-2 transition disabled:opacity-40"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition disabled:opacity-40 cursor-pointer"
             >
               {analyzing ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-amber-400" />
                   <span>Đang trích xuất đặc trưng ViT...</span>
                 </>
               ) : (
@@ -125,51 +125,51 @@ export const ImageAnalysisPage: React.FC = () => {
           </form>
 
           {error && (
-            <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+            <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 text-xs font-medium">
               {error}
             </div>
           )}
         </div>
 
         {/* Results */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+        <div className="bg-white p-6 rounded-2xl border-2 border-slate-300 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Eye className="w-4 h-4 text-amber-400" /> Kết quả giám định hình ảnh
+            <h3 className="text-sm font-black text-slate-950 mb-4 flex items-center gap-2">
+              <Eye className="w-4 h-4 text-amber-600 stroke-[2.5]" /> Kết quả giám định hình ảnh
             </h3>
 
             {result ? (
               <div className="space-y-4 animate-fadeIn">
-                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-700">
+                <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-300">
                   <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                     {getLabelBadge(result.predicted_label)}
-                    <span className="text-xs text-amber-400 font-mono font-bold">
+                    <span className="text-xs text-slate-900 font-mono font-black">
                       {(result.confidence_score * 100).toFixed(1)}% tin cậy
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 font-mono">Phiên giám định: #{result.session_id}</p>
+                  <p className="text-xs text-slate-600 font-mono font-bold">Phiên giám định: #{result.session_id}</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-2">
-                  <span className="text-xs font-semibold text-slate-200 block">Dấu hiệu phát hiện:</span>
-                  <p className="text-xs text-slate-300 leading-relaxed">{result.summary}</p>
+                <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-300 space-y-2">
+                  <span className="text-xs font-black text-slate-950 block">Dấu hiệu phát hiện:</span>
+                  <p className="text-xs text-slate-800 font-medium leading-relaxed">{result.summary}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-[11px]">
-                  <div className="p-3 rounded-xl bg-slate-900/40 border border-slate-800">
-                    <span className="text-slate-400 block mb-0.5">Tệp xử lý:</span>
-                    <strong className="text-white truncate block">{result.file_name}</strong>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-300">
+                    <span className="text-slate-500 font-bold block mb-0.5">Tệp xử lý:</span>
+                    <strong className="text-slate-900 truncate block font-mono">{result.file_name}</strong>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/40 border border-slate-800">
-                    <span className="text-slate-400 block mb-0.5">Mô hình:</span>
-                    <strong className="text-amber-400">{result.model_name}</strong>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-300">
+                    <span className="text-slate-500 font-bold block mb-0.5">Mô hình:</span>
+                    <strong className="text-amber-800 font-mono font-bold">{result.model_name}</strong>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-xl">
-                <ImageIcon className="w-8 h-8 text-slate-700 mb-2" />
-                <p className="text-xs text-slate-400">Chọn hoặc kéo thả hình ảnh để hiển thị kết quả phân loại và bản đồ nhiệt giả mạo.</p>
+              <div className="h-64 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50">
+                <ImageIcon className="w-10 h-10 text-slate-400 mb-2" />
+                <p className="text-xs text-slate-600 font-medium">Chọn hoặc kéo thả hình ảnh để hiển thị kết quả phân loại và bản đồ nhiệt giả mạo.</p>
               </div>
             )}
           </div>
