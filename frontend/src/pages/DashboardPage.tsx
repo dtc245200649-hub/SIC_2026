@@ -24,6 +24,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  CartesianGrid,
 } from 'recharts';
 
 const trendData = [
@@ -37,11 +38,11 @@ const trendData = [
 ];
 
 const modalityDistribution = [
-  { name: 'Đa phương thức (Multimodal)', value: 45, color: '#10b981' },
-  { name: 'Văn bản (Text)', value: 25, color: '#38bdf8' },
-  { name: 'Hình ảnh (Image)', value: 15, color: '#f59e0b' },
-  { name: 'Video & Keyframes', value: 10, color: '#ec4899' },
-  { name: 'Âm thanh (Audio)', value: 5, color: '#a855f7' },
+  { name: 'Đa phương thức (Multimodal)', value: 45, color: '#059669' },
+  { name: 'Văn bản (Text)', value: 25, color: '#0284c7' },
+  { name: 'Hình ảnh (Image)', value: 15, color: '#d97706' },
+  { name: 'Video & Keyframes', value: 10, color: '#e11d48' },
+  { name: 'Âm thanh (Audio)', value: 5, color: '#7c3aed' },
 ];
 
 const recentAnalyses = [
@@ -88,25 +89,25 @@ const getBadge = (pred: string) => {
     case 'CHINH_XAC':
       return {
         label: 'Chính xác',
-        color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+        color: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold',
         icon: CheckCircle2,
       };
     case 'GAY_HIEU_LAM':
       return {
         label: 'Gây hiểu lầm',
-        color: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        color: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
         icon: AlertTriangle,
       };
     case 'SAI_SU_THAT':
       return {
         label: 'Sai sự thật',
-        color: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+        color: 'bg-rose-100 text-rose-900 border-rose-300 font-bold',
         icon: XCircle,
       };
     default:
       return {
         label: 'Chưa đủ chứng cứ',
-        color: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+        color: 'bg-slate-100 text-slate-800 border-slate-300 font-bold',
         icon: HelpCircle,
       };
   }
@@ -115,26 +116,26 @@ const getBadge = (pred: string) => {
 export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-brand-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-brand-950/40">
+      {/* Top Banner - Deep Solid Navy with Sharp White Typography */}
+      <div className="p-6 rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-[#0a192f] border border-slate-700 shadow-md">
         <div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
             Học sâu Đa phương thức & Giải thích XAI
           </span>
-          <h2 className="text-2xl font-bold text-white mt-2">
+          <h2 className="text-2xl font-black text-white mt-2 tracking-tight">
             Nền tảng Giám sát & Phát hiện Tin giả Mạng xã hội Việt Nam
           </h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-medium">
             Hệ thống phân tích đồng thời Văn bản (PhoBERT), Thị giác (ViT), Giọng nói (Whisper) kết hợp cơ chế Cross-modal Attention và đối soát chứng cứ báo chí chính thống.
           </p>
         </div>
 
         <Link
-          to="/analysis/multimodal"
-          className="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-emerald-500 hover:from-brand-500 text-white font-medium text-xs shadow-lg shadow-brand-500/25 flex items-center gap-2 whitespace-nowrap transition"
+          to="/checker"
+          className="px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-md flex items-center gap-2 whitespace-nowrap transition"
         >
           <Layers className="w-4 h-4" />
-          <span>Bắt đầu Phân tích Đa phương thức</span>
+          <span>Kiểm chứng trực tiếp & XAI</span>
           <ArrowUpRight className="w-4 h-4" />
         </Link>
       </div>
@@ -177,62 +178,67 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Quick Launch Analysis Tools */}
-      <div className="glass-panel p-5 rounded-2xl">
-        <h3 className="text-sm font-bold text-white mb-3">Lối tắt Phân tích theo Phương thức</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+            Lối tắt Phân tích theo Phương thức
+          </h3>
+          <span className="text-xs text-slate-500 font-medium">5 mô hình đơn / đa phương thức</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           <Link
             to="/analysis/multimodal"
-            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-brand-600/15 border border-slate-700/60 hover:border-brand-500/40 transition group flex flex-col items-center text-center"
+            className="p-4 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-300 hover:border-emerald-500 transition group flex flex-col items-center text-center shadow-2xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
-              <Layers className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-emerald-300">
+              <Layers className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className="text-xs font-semibold text-white">Đa phương thức</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">Text + Visual + Audio</span>
+            <span className="text-xs font-bold text-slate-900">Đa phương thức</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Text + Visual + Audio</span>
           </Link>
 
           <Link
             to="/analysis/text"
-            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-sky-600/15 border border-slate-700/60 hover:border-sky-500/40 transition group flex flex-col items-center text-center"
+            className="p-4 rounded-xl bg-slate-50 hover:bg-sky-50/60 border border-slate-300 hover:border-sky-500 transition group flex flex-col items-center text-center shadow-2xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
-              <FileText className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-sky-300">
+              <FileText className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className="text-xs font-semibold text-white">Văn bản (Text)</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">PhoBERT v2</span>
+            <span className="text-xs font-bold text-slate-900">Văn bản (Text)</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">PhoBERT v2</span>
           </Link>
 
           <Link
             to="/analysis/image"
-            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-amber-600/15 border border-slate-700/60 hover:border-amber-500/40 transition group flex flex-col items-center text-center"
+            className="p-4 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-300 hover:border-amber-500 transition group flex flex-col items-center text-center shadow-2xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
-              <Image className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-amber-300">
+              <Image className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className="text-xs font-semibold text-white">Hình ảnh (Image)</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">Vision Transformer ViT</span>
+            <span className="text-xs font-bold text-slate-900">Hình ảnh (Image)</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Vision Transformer ViT</span>
           </Link>
 
           <Link
             to="/analysis/video"
-            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-pink-600/15 border border-slate-700/60 hover:border-pink-500/40 transition group flex flex-col items-center text-center"
+            className="p-4 rounded-xl bg-slate-50 hover:bg-rose-50/60 border border-slate-300 hover:border-rose-500 transition group flex flex-col items-center text-center shadow-2xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
-              <Video className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-rose-300">
+              <Video className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className="text-xs font-semibold text-white">Video (Keyframes)</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">OpenCV Temporal</span>
+            <span className="text-xs font-bold text-slate-900">Video (Keyframes)</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">OpenCV Temporal</span>
           </Link>
 
           <Link
             to="/analysis/audio"
-            className="p-3.5 rounded-xl bg-slate-800/70 hover:bg-purple-600/15 border border-slate-700/60 hover:border-purple-500/40 transition group flex flex-col items-center text-center"
+            className="p-4 rounded-xl bg-slate-50 hover:bg-purple-50/60 border border-slate-300 hover:border-purple-500 transition group flex flex-col items-center text-center shadow-2xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition">
-              <Mic className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-purple-300">
+              <Mic className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className="text-xs font-semibold text-white">Âm thanh (Audio)</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">Whisper STT</span>
+            <span className="text-xs font-bold text-slate-900">Âm thanh (Audio)</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Whisper STT</span>
           </Link>
         </div>
       </div>
@@ -240,48 +246,54 @@ export const DashboardPage: React.FC = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Trend Area Chart */}
-        <div className="lg:col-span-2 glass-panel p-5 rounded-2xl">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-300 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-white">Xu hướng Phân tích trong tuần</h3>
-              <p className="text-xs text-slate-400">Tỷ lệ nội dung được xác minh vs sai sự thật</p>
+              <h3 className="text-sm font-bold text-slate-900">Xu hướng Phân tích trong tuần</h3>
+              <p className="text-xs text-slate-600 font-medium">Tỷ lệ nội dung được xác minh vs sai sự thật</p>
             </div>
+            <span className="text-xs font-mono px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-300 font-semibold">
+              7 ngày qua
+            </span>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#059669" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="colorFake" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#e11d48" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#e11d48" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" stroke="#334155" fontSize={11} fontWeight={600} />
+                <YAxis stroke="#334155" fontSize={11} fontWeight={600} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#0f172a',
                     borderColor: '#334155',
                     borderRadius: '8px',
                     fontSize: '12px',
+                    color: '#ffffff',
+                    fontWeight: 500,
                   }}
                 />
-                <Area type="monotone" dataKey="total" name="Tổng phân tích" stroke="#10b981" fill="url(#colorTotal)" strokeWidth={2} />
-                <Area type="monotone" dataKey="fake" name="Sai sự thật" stroke="#f43f5e" fill="url(#colorFake)" strokeWidth={2} />
+                <Area type="monotone" dataKey="total" name="Tổng phân tích" stroke="#059669" strokeWidth={2.5} fill="url(#colorTotal)" />
+                <Area type="monotone" dataKey="fake" name="Sai sự thật" stroke="#e11d48" strokeWidth={2.5} fill="url(#colorFake)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Modality Donut Chart */}
-        <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white">Phân bổ Phương thức</h3>
-            <p className="text-xs text-slate-400">Tỷ trọng các luồng dữ liệu tiếp nhận</p>
+            <h3 className="text-sm font-bold text-slate-900">Phân bổ Phương thức</h3>
+            <p className="text-xs text-slate-600 font-medium">Tỷ trọng các luồng dữ liệu tiếp nhận</p>
           </div>
           <div className="h-48 relative flex items-center justify-center my-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -297,7 +309,7 @@ export const DashboardPage: React.FC = () => {
                   paddingAngle={4}
                 >
                   {modalityDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip
@@ -306,19 +318,20 @@ export const DashboardPage: React.FC = () => {
                     borderColor: '#334155',
                     borderRadius: '8px',
                     fontSize: '12px',
+                    color: '#ffffff',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-1.5 text-xs">
+          <div className="space-y-2 text-xs">
             {modalityDistribution.slice(0, 3).map((item) => (
               <div key={item.name} className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-slate-300">
+                <span className="flex items-center gap-1.5 text-slate-700 font-medium">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                   {item.name}
                 </span>
-                <span className="font-semibold text-white">{item.value}%</span>
+                <span className="font-bold text-slate-900 font-mono">{item.value}%</span>
               </div>
             ))}
           </div>
@@ -326,13 +339,13 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Sessions Table */}
-      <div className="glass-panel p-5 rounded-2xl">
+      <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-bold text-white">Phiên Phân tích Gần đây</h3>
-            <p className="text-xs text-slate-400">Lịch sử đánh giá với chỉ số mâu thuẫn chéo (Inconsistency Score)</p>
+            <h3 className="text-sm font-bold text-slate-900">Phiên Phân tích Gần đây</h3>
+            <p className="text-xs text-slate-600 font-medium">Lịch sử đánh giá với chỉ số mâu thuẫn chéo (Inconsistency Score)</p>
           </div>
-          <Link to="/history" className="text-xs font-medium text-brand-400 hover:underline flex items-center gap-1">
+          <Link to="/history" className="text-xs font-bold text-sky-700 hover:text-sky-800 flex items-center gap-1 hover:underline">
             Xem tất cả
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
@@ -341,63 +354,63 @@ export const DashboardPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400">
-                <th className="pb-3 font-medium">Tiêu đề bài đăng / Nội dung</th>
-                <th className="pb-3 font-medium">Phương thức</th>
-                <th className="pb-3 font-medium">Dự đoán AI</th>
-                <th className="pb-3 font-medium">Độ tin cậy</th>
-                <th className="pb-3 font-medium">Mâu thuẫn chéo</th>
-                <th className="pb-3 font-medium">Thời gian</th>
-                <th className="pb-3 text-right font-medium">Chi tiết</th>
+              <tr className="border-b-2 border-slate-200 text-slate-700 font-bold">
+                <th className="pb-3 pr-4">Tiêu đề bài đăng / Nội dung</th>
+                <th className="pb-3 px-2">Phương thức</th>
+                <th className="pb-3 px-2">Dự đoán AI</th>
+                <th className="pb-3 px-2">Độ tin cậy</th>
+                <th className="pb-3 px-2">Mâu thuẫn chéo</th>
+                <th className="pb-3 px-2">Thời gian</th>
+                <th className="pb-3 text-right">Chi tiết</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200">
               {recentAnalyses.map((item) => {
                 const badge = getBadge(item.prediction);
                 const BadgeIcon = badge.icon;
                 return (
-                  <tr key={item.id} className="hover:bg-slate-800/40 transition">
-                    <td className="py-3 pr-4 font-medium text-slate-200 max-w-xs truncate">
+                  <tr key={item.id} className="hover:bg-slate-50 transition">
+                    <td className="py-3.5 pr-4 font-semibold text-slate-900 max-w-xs truncate">
                       {item.title}
                     </td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[10px]">
+                    <td className="py-3.5 px-2">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-mono text-[11px] font-bold">
                         {item.modality}
                       </span>
                     </td>
-                    <td className="py-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-medium ${badge.color}`}>
-                        <BadgeIcon className="w-3 h-3" />
+                    <td className="py-3.5 px-2">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] ${badge.color}`}>
+                        <BadgeIcon className="w-3 h-3 stroke-[2.2]" />
                         {badge.label}
                       </span>
                     </td>
-                    <td className="py-3 font-semibold text-slate-200">
+                    <td className="py-3.5 px-2 font-mono font-bold text-slate-900">
                       {(item.confidence * 100).toFixed(0)}%
                     </td>
-                    <td className="py-3">
+                    <td className="py-3.5 px-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="w-16 h-2 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
                           <div
                             className={`h-full rounded-full ${
                               item.inconsistency > 0.6
-                                ? 'bg-rose-500'
+                                ? 'bg-rose-600'
                                 : item.inconsistency > 0.3
-                                ? 'bg-amber-500'
-                                : 'bg-emerald-500'
+                                ? 'bg-amber-600'
+                                : 'bg-emerald-600'
                             }`}
                             style={{ width: `${item.inconsistency * 100}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-slate-700 font-mono font-bold">
                           {(item.inconsistency * 100).toFixed(0)}%
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 text-slate-400">{item.date}</td>
-                    <td className="py-3 text-right">
+                    <td className="py-3.5 px-2 text-slate-600 font-medium">{item.date}</td>
+                    <td className="py-3.5 text-right">
                       <Link
-                        to="/results/xai"
-                        className="text-brand-400 hover:text-brand-300 font-medium inline-flex items-center gap-0.5"
+                        to="/checker"
+                        className="text-sky-700 hover:text-sky-800 font-bold inline-flex items-center gap-0.5"
                       >
                         XAI <ArrowUpRight className="w-3 h-3" />
                       </Link>
@@ -412,3 +425,5 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+
+export default DashboardPage;

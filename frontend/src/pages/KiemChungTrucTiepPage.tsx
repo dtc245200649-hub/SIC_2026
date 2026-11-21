@@ -260,24 +260,24 @@ export const KiemChungTrucTiepPage: React.FC = () => {
       {/* Title Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Kiểm chứng trực tiếp & Giải thích XAI
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-600 mt-1 font-medium">
             Nhập văn bản kèm hình ảnh hoặc video ngắn để phát hiện thông tin sai lệch và quan sát giải thích đa phương thức.
           </p>
         </div>
 
         {/* 3 Mẫu Preset Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {samples.map((s) => (
             <button
               key={s.id}
               onClick={() => handleSelectSample(s)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 selectedSampleId === s.id
-                  ? 'bg-[#0a192f] text-white shadow-sm'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300'
+                  ? 'bg-[#0a192f] text-white shadow-md border-2 border-slate-900'
+                  : 'bg-white hover:bg-slate-100 text-slate-800 border-2 border-slate-300 shadow-2xs'
               }`}
             >
               {s.title}
@@ -289,10 +289,12 @@ export const KiemChungTrucTiepPage: React.FC = () => {
       {/* 2 CỘT CHÍNH: Cột Trái (Input) & Cột Phải (Kết quả + XAI) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* CỘT TRÁI: Dữ liệu bài đăng đầu vào (5 / 12) */}
-        <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900">Dữ liệu bài đăng đầu vào</h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-semibold">
+        <div className="lg:col-span-5 bg-white border border-slate-300 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-3">
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+              Dữ liệu bài đăng đầu vào
+            </h2>
+            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-300 font-bold">
               PhoBERT + CLIP
             </span>
           </div>
@@ -300,7 +302,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
           <form onSubmit={handleAnalyze} className="space-y-4">
             {/* 1. Nội dung văn bản */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-900 mb-1.5">
                 Nội dung văn bản bài đăng
               </label>
               <textarea
@@ -308,24 +310,24 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Nhập hoặc dán nội dung bài viết cần kiểm chứng..."
-                className="w-full p-3.5 rounded-xl bg-slate-50/60 border border-slate-200 text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 leading-relaxed transition"
+                className="w-full p-3.5 rounded-xl bg-white border-2 border-slate-300 text-slate-900 text-xs font-medium placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-500/20 leading-relaxed transition"
               />
             </div>
 
             {/* 2. Phương tiện đính kèm (Ảnh / Video) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-bold text-slate-900">
                   Phương tiện đính kèm (Ảnh / Video)
                 </label>
-                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-300">
                   <button
                     type="button"
                     onClick={() => setMediaType('image')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition cursor-pointer ${
+                    className={`px-3 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
                       mediaType === 'image'
-                        ? 'bg-[#0a192f] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#0a192f] text-white shadow-2xs'
+                        : 'text-slate-700 hover:text-slate-900'
                     }`}
                   >
                     Hình ảnh
@@ -333,10 +335,10 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setMediaType('video')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition cursor-pointer ${
+                    className={`px-3 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
                       mediaType === 'video'
-                        ? 'bg-[#0a192f] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#0a192f] text-white shadow-2xs'
+                        : 'text-slate-700 hover:text-slate-900'
                     }`}
                   >
                     Video ngắn
@@ -345,15 +347,15 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               </div>
 
               {/* Preview Container */}
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group">
+              <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-100 group">
                 <img
                   src={mediaUrl}
                   alt="Attached Media"
                   className="w-full h-44 object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-2.5">
-                  <span className="text-[10px] text-white flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded backdrop-blur">
-                    <ImageIcon className="w-3 h-3 text-sky-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-3">
+                  <span className="text-[11px] text-white font-bold flex items-center gap-1.5 bg-black/75 px-2.5 py-1 rounded border border-white/20 backdrop-blur">
+                    <ImageIcon className="w-3.5 h-3.5 text-sky-300" />
                     Đặc trưng thị giác ViT (224x224 Patch 16)
                   </span>
                 </div>
@@ -363,13 +365,13 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             {/* 3. Nền tảng nguồn & Lượt chia sẻ */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-bold text-slate-800 mb-1">
                   Nền tảng nguồn
                 </label>
                 <select
                   value={platform}
                   onChange={(e) => setPlatform(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50/60 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-900 font-semibold text-xs focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="Facebook (Công khai)">Facebook (Công khai)</option>
                   <option value="TikTok Video">TikTok Video</option>
@@ -379,7 +381,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-bold text-slate-800 mb-1">
                   Lượt chia sẻ ghi nhận
                 </label>
                 <input
@@ -387,7 +389,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                   value={shares}
                   onChange={(e) => setShares(e.target.value)}
                   placeholder="1,842 lượt / 2 giờ"
-                  className="w-full p-2.5 rounded-xl bg-slate-50/60 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+                  className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-500 font-mono font-bold"
                 />
               </div>
             </div>
@@ -396,11 +398,11 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             <button
               type="submit"
               disabled={analyzing}
-              className="w-full py-3 px-4 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-semibold text-xs shadow-sm flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
             >
               {analyzing ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-sky-400" />
                   <span>Đang phân tích đa phương thức...</span>
                 </>
               ) : (
@@ -416,27 +418,27 @@ export const KiemChungTrucTiepPage: React.FC = () => {
         {/* CỘT PHẢI: KẾT QUẢ ĐÁNH GIÁ & XAI (7 / 12) */}
         <div className="lg:col-span-7 space-y-5">
           {/* CARD 1: KẾT QUẢ TỔNG QUAN */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-black tracking-wide flex items-center gap-1.5 border-2 shadow-2xs ${
                     isFake
-                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      ? 'bg-rose-100 text-rose-950 border-rose-400'
+                      : 'bg-emerald-100 text-emerald-950 border-emerald-400'
                   }`}
                 >
-                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
                   {currentResult.labelDisplay}
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 font-medium">
+                <span className="text-xs font-mono text-slate-700 font-bold">
                   ID: {currentResult.idCode}
                 </span>
               </div>
 
               <div className="text-right">
-                <span className="text-xs text-slate-500">Độ tin cậy: </span>
-                <strong className="text-sm font-bold text-slate-900 font-mono">
+                <span className="text-xs text-slate-600 font-medium">Độ tin cậy: </span>
+                <strong className="text-base font-black text-slate-900 font-mono">
                   {currentResult.confidence}%
                 </strong>
               </div>
@@ -444,33 +446,37 @@ export const KiemChungTrucTiepPage: React.FC = () => {
 
             {/* Cross-Modal Mismatch Box */}
             <div
-              className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+              className={`p-4 rounded-xl border-2 text-xs leading-relaxed ${
                 isFake
-                  ? 'bg-rose-50/70 border-rose-200 text-rose-900'
-                  : 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                  ? 'bg-rose-50 border-rose-300 text-rose-950'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-950'
               }`}
             >
-              <div className="flex items-center gap-1.5 font-bold mb-1">
-                <span>↳</span>
+              <div className="flex items-center gap-2 font-black mb-1.5 text-[13px]">
+                <span className="text-base">↳</span>
                 <span>
                   Phát hiện lệch ngữ cảnh đa phương thức (Cross-Modal Mismatch:{' '}
                   {currentResult.crossModalMismatch})
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600">{currentResult.mismatchDesc}</p>
+              <p className="text-xs text-slate-800 font-medium leading-relaxed">
+                {currentResult.mismatchDesc}
+              </p>
             </div>
 
             {/* Đóng góp quyết định theo phương thức */}
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-800">
+                <span className="font-bold text-slate-900">
                   Đóng góp quyết định theo phương thức
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">100% tổng trọng số</span>
+                <span className="text-[11px] text-slate-600 font-mono font-bold">
+                  100% tổng trọng số
+                </span>
               </div>
 
               {/* Stacked Progress Bar */}
-              <div className="h-3 rounded-full overflow-hidden flex bg-slate-100 border border-slate-200">
+              <div className="h-3.5 rounded-full overflow-hidden flex bg-slate-200 border border-slate-300">
                 <div
                   style={{ width: `${currentResult.weights.text}%` }}
                   className="bg-[#0284c7] transition-all duration-500"
@@ -489,34 +495,34 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               </div>
 
               {/* Legend */}
-              <div className="flex items-center justify-between text-[11px] text-slate-600 pt-0.5">
+              <div className="flex items-center justify-between text-xs text-slate-800 font-bold pt-0.5">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] inline-block"></span>
-                  Văn bản (PhoBERT): <strong className="text-slate-900">{currentResult.weights.text}%</strong>
+                  <span className="w-3 h-3 rounded-full bg-[#0284c7] inline-block shadow-2xs"></span>
+                  Văn bản (PhoBERT): <strong className="text-slate-950 font-black font-mono">{currentResult.weights.text}%</strong>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488] inline-block"></span>
-                  Hình ảnh / Video (CLIP): <strong className="text-slate-900">{currentResult.weights.media}%</strong>
+                  <span className="w-3 h-3 rounded-full bg-[#0d9488] inline-block shadow-2xs"></span>
+                  Hình ảnh / Video (CLIP): <strong className="text-slate-950 font-black font-mono">{currentResult.weights.media}%</strong>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#ea580c] inline-block"></span>
-                  Lan truyền xã hội: <strong className="text-slate-900">{currentResult.weights.social}%</strong>
+                  <span className="w-3 h-3 rounded-full bg-[#ea580c] inline-block shadow-2xs"></span>
+                  Lan truyền: <strong className="text-slate-950 font-black font-mono">{currentResult.weights.social}%</strong>
                 </span>
               </div>
             </div>
           </div>
 
           {/* CARD 2: CHI TIẾT GIẢI THÍCH (XAI) */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-xs space-y-4">
             {/* 3 Tabs XAI */}
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-3">
               <button
                 type="button"
                 onClick={() => setActiveXaiTab('text')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   activeXaiTab === 'text'
-                    ? 'bg-[#0a192f] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
+                    ? 'bg-[#0a192f] text-white shadow-sm'
+                    : 'text-slate-800 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300'
                 }`}
               >
                 Giải thích Văn bản (SHAP)
@@ -524,10 +530,10 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveXaiTab('gradcam')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   activeXaiTab === 'gradcam'
-                    ? 'bg-[#0a192f] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
+                    ? 'bg-[#0a192f] text-white shadow-sm'
+                    : 'text-slate-800 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300'
                 }`}
               >
                 Bản đồ chú ý Ảnh (Grad-CAM)
@@ -535,10 +541,10 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveXaiTab('social')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   activeXaiTab === 'social'
-                    ? 'bg-[#0a192f] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
+                    ? 'bg-[#0a192f] text-white shadow-sm'
+                    : 'text-slate-800 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300'
                 }`}
               >
                 Tác động xã hội
@@ -549,13 +555,13 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             {activeXaiTab === 'text' && (
               <div className="space-y-4 animate-fadeIn">
                 {/* Highlighted text container */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed">
+                <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-300 text-xs leading-loose font-medium text-slate-900">
                   {currentResult.highlightedTokens.map((t, idx) => {
                     if (t.type === 'fake') {
                       return (
                         <span
                           key={idx}
-                          className="mx-0.5 px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-bold border border-rose-200"
+                          className="mx-1 px-2 py-0.5 rounded bg-rose-200 text-rose-950 font-extrabold border-2 border-rose-400 shadow-2xs inline-block"
                           title={`SHAP: ${t.score}`}
                         >
                           {t.word}
@@ -565,26 +571,26 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                       return (
                         <span
                           key={idx}
-                          className="mx-0.5 px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-semibold border border-teal-200"
+                          className="mx-1 px-2 py-0.5 rounded bg-teal-100 text-teal-950 font-bold border-2 border-teal-300 inline-block"
                           title={`SHAP: ${t.score}`}
                         >
                           {t.word}
                         </span>
                       );
                     }
-                    return <span key={idx} className="text-slate-700">{t.word} </span>;
+                    return <span key={idx} className="text-slate-900 font-medium">{t.word} </span>;
                   })}
                 </div>
 
                 {/* SHAP Values Bar Chart */}
                 <div>
                   <div className="flex items-center justify-between text-xs mb-2.5">
-                    <span className="font-semibold text-slate-800">
+                    <span className="font-bold text-slate-900">
                       Trọng số đóng góp cụm từ (SHAP Values)
                     </span>
-                    <span className="text-[10px] text-slate-500">
-                      <span className="text-rose-600 font-bold">Đỏ:</span> tăng nghi vấn sai lệch —{' '}
-                      <span className="text-teal-700 font-bold">Xanh:</span> trung tính
+                    <span className="text-[11px] text-slate-700 font-medium">
+                      <span className="text-rose-700 font-black">Đỏ:</span> tăng nghi vấn sai lệch —{' '}
+                      <span className="text-teal-800 font-black">Xanh:</span> trung tính
                     </span>
                   </div>
 
@@ -594,20 +600,20 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                       const widthPercent = Math.min(100, Math.abs(item.value) * 180);
                       return (
                         <div key={idx} className="flex items-center text-xs gap-3">
-                          <span className="w-32 truncate text-slate-700 font-mono text-[11px] font-medium">
+                          <span className="w-36 truncate text-slate-900 font-mono text-[11px] font-bold">
                             {item.phrase}
                           </span>
-                          <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden flex items-center border border-slate-200">
+                          <div className="flex-1 h-3 rounded-full bg-slate-200 overflow-hidden flex items-center border border-slate-300">
                             <div
                               style={{ width: `${widthPercent}%` }}
                               className={`h-full rounded-full transition-all ${
-                                item.isSuspicious ? 'bg-rose-500' : 'bg-teal-600'
+                                item.isSuspicious ? 'bg-rose-600' : 'bg-teal-700'
                               }`}
                             ></div>
                           </div>
                           <span
-                            className={`w-12 text-right font-mono font-bold text-[11px] ${
-                              item.isSuspicious ? 'text-rose-600' : 'text-teal-700'
+                            className={`w-14 text-right font-mono font-black text-xs ${
+                              item.isSuspicious ? 'text-rose-700' : 'text-teal-800'
                             }`}
                           >
                             {isPos ? `+${item.value}` : item.value}
@@ -623,20 +629,20 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             {/* TAB 2: GRAD-CAM */}
             {activeXaiTab === 'gradcam' && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 text-center">
-                    <span className="text-[10px] text-slate-500 font-semibold block mb-1">Ảnh Gốc Đầu Vào</span>
-                    <img src={mediaUrl} alt="Original" className="h-36 w-full object-cover rounded-lg" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-50 p-2.5 text-center">
+                    <span className="text-xs text-slate-800 font-bold block mb-1.5">Ảnh Gốc Đầu Vào</span>
+                    <img src={mediaUrl} alt="Original" className="h-40 w-full object-cover rounded-lg border border-slate-200" />
                   </div>
-                  <div className="rounded-xl overflow-hidden border border-rose-300 bg-slate-50 p-2 text-center relative">
-                    <span className="text-[10px] text-rose-700 font-bold block mb-1">
+                  <div className="rounded-xl overflow-hidden border-2 border-rose-400 bg-slate-50 p-2.5 text-center relative">
+                    <span className="text-xs text-rose-800 font-black block mb-1.5">
                       Bản đồ chú ý Grad-CAM Heatmap
                     </span>
-                    <div className="relative rounded-lg overflow-hidden h-36">
+                    <div className="relative rounded-lg overflow-hidden h-40 border border-slate-200">
                       <img src={mediaUrl} alt="Heatmap" className="h-full w-full object-cover filter contrast-125" />
-                      <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/30 via-amber-500/20 to-transparent mix-blend-multiply"></div>
-                      <div className="absolute top-4 left-6 w-24 h-16 border-2 border-rose-500 rounded-md bg-rose-500/20">
-                        <span className="text-[9px] bg-rose-600 text-white font-bold px-1 rounded absolute -top-2 left-1 shadow-xs">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/40 via-amber-500/25 to-transparent mix-blend-multiply"></div>
+                      <div className="absolute top-4 left-6 w-24 h-16 border-2 border-rose-600 rounded-md bg-rose-500/30">
+                        <span className="text-[10px] bg-rose-700 text-white font-black px-1.5 py-0.5 rounded absolute -top-2.5 left-1 shadow-sm">
                           Vùng cắt ghép 87%
                         </span>
                       </div>
@@ -644,8 +650,8 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed">
-                  <strong className="text-slate-900 block font-semibold mb-0.5">Kết luận phân tích thị giác:</strong>
+                <div className="p-4 rounded-xl bg-slate-100 border-2 border-slate-300 text-xs text-slate-900 leading-relaxed font-medium">
+                  <strong className="text-slate-950 block font-black mb-1 text-[13px]">Kết luận phân tích thị giác:</strong>
                   {currentResult.gradCamDesc}
                 </div>
               </div>
@@ -654,38 +660,38 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             {/* TAB 3: TÁC ĐỘNG XÃ HỘI */}
             {activeXaiTab === 'social' && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-[10px] text-slate-500 block mb-0.5 font-medium">Hệ số lây lan R0</span>
-                    <strong className="text-xl text-amber-600 font-mono font-extrabold">
+                <div className="grid grid-cols-3 gap-3.5">
+                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
+                    <span className="text-xs text-slate-600 block mb-1 font-bold">Hệ số lây lan R0</span>
+                    <strong className="text-2xl text-amber-700 font-mono font-black">
                       {currentResult.socialImpact.r0}
                     </strong>
-                    <span className="text-[10px] text-rose-600 font-bold block mt-0.5">
+                    <span className="text-xs text-rose-700 font-black block mt-1">
                       Nguy cơ: {currentResult.socialImpact.level}
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-[10px] text-slate-500 block mb-0.5 font-medium">Tốc độ phát tán</span>
-                    <strong className="text-xs text-slate-900 font-mono block mt-1 font-bold">
+                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
+                    <span className="text-xs text-slate-600 block mb-1 font-bold">Tốc độ phát tán</span>
+                    <strong className="text-xs text-slate-900 font-mono block mt-2 font-black">
                       {currentResult.socialImpact.speed}
                     </strong>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-[10px] text-slate-500 block mb-0.5 font-medium">Dự báo phơi nhiễm</span>
-                    <strong className="text-xs text-slate-900 font-mono block mt-1 font-bold">
+                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
+                    <span className="text-xs text-slate-600 block mb-1 font-bold">Dự báo phơi nhiễm</span>
+                    <strong className="text-xs text-slate-900 font-mono block mt-2 font-black">
                       {currentResult.socialImpact.predictedExposure}
                     </strong>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-slate-700">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1">
-                    <Share2 className="w-4 h-4 text-amber-600" />
+                <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-300 text-xs text-slate-900">
+                  <div className="flex items-center gap-2 font-black text-amber-900 mb-1.5 text-[13px]">
+                    <Share2 className="w-4 h-4 text-amber-700 stroke-[2.5]" />
                     <span>Mô hình hóa Đồ thị Lan truyền GNN (Rumor Cascade Model):</span>
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-800 leading-relaxed font-medium">
                     Nội dung đang có xu hướng nhân rộng qua các hội nhóm địa phương. Đồ thị mạng
                     xã hội xác định 3 nút khuếch đại (KOL Amplifiers) đang tái chia sẻ với tần suất cao.
                   </p>
