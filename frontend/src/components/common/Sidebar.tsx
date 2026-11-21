@@ -66,10 +66,10 @@ const navSections: NavSection[] = [
         icon: ShieldCheck,
       },
       {
-        name: 'Đồ thị Mạng xã hội',
+        name: 'Phân tích tác động xã hội',
         path: '/social-graph',
         icon: Share2,
-        tag: 'GNN',
+        tag: 'Lan truyền',
         tagColor: 'bg-amber-50 text-amber-800 border-amber-300',
       },
     ],
