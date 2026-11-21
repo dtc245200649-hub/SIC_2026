@@ -26,6 +26,16 @@ class EvidenceDocumentOut(BaseModel):
     source: EvidenceSourceOut
 
 
+class EvidenceDocumentCreate(BaseModel):
+    title: str
+    url: str
+    snippet: str
+    source_name: str
+    source_domain: Optional[str] = None
+    published_date: Optional[datetime] = None
+    reliability_score: float = 1.0
+
+
 class FactCheckSearchResponse(BaseModel):
     total: int
     items: List[EvidenceDocumentOut]

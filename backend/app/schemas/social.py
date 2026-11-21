@@ -27,6 +27,7 @@ class EvidenceMatchItem(BaseModel):
     source_name: str
     title: str
     url: str
+    snippet: Optional[str] = None
     similarity_score: float
     verdict: str  # "SUPPORTS", "REFUTES", "RELATED"
 

@@ -64,3 +64,22 @@ def test_verify_claim_nli(db_session: Session):
     assert len(res.matched_evidences) >= 1
     assert res.matched_evidences[0].nli_verdict == "REFUTES"
     assert res.overall_verdict == "REFUTES"
+
+
+def test_create_evidence(db_session: Session):
+    """Kiểm tra thêm bài báo / mẫu kiểm chứng mới."""
+    from app.api.v1.endpoints.fact_check import create_evidence
+    from app.schemas.fact_check import EvidenceDocumentCreate
+
+    payload = EvidenceDocumentCreate(
+        title="Đính chính thông tin vỡ đê sông Hồng",
+        url="https://tuoitre.vn/dinh-chinh-de-song-hong.html",
+        snippet="Hà Nội khẳng định các tuyến đê vẫn an toàn, người dân không nên chia sẻ thông tin hoang mang.",
+        source_name="Báo Tuổi Trẻ",
+        source_domain="tuoitre.vn",
+        reliability_score=0.99,
+    )
+    doc_out = create_evidence(payload=payload, db=db_session)
+    assert doc_out.id is not None
+    assert doc_out.title == "Đính chính thông tin vỡ đê sông Hồng"
+    assert doc_out.source.name == "Báo Tuổi Trẻ"

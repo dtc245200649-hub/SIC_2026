@@ -95,6 +95,7 @@ def analyze_social_url(
                     source_name=doc.source.name if doc.source else "Báo chí chính thống",
                     title=doc.title,
                     url=doc.url,
+                    snippet=doc.snippet,
                     similarity_score=sim_score,
                     verdict=verdict,
                 )

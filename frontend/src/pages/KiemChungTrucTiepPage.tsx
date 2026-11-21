@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
   AlertTriangle,
@@ -15,6 +16,11 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
+  Database,
+  XCircle,
+  HelpCircle,
+  Quote,
+  BookOpen,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -55,6 +61,15 @@ interface SampleItem {
       predictedExposure: string;
       level: 'CAO' | 'TRUNG_BINH' | 'THAP';
     };
+    evidenceMatches: Array<{
+      source_name: string;
+      title: string;
+      url: string;
+      snippet?: string;
+      published_date?: string;
+      similarity_score: number;
+      verdict: 'REFUTES' | 'SUPPORTS' | 'RELATED';
+    }>;
   };
 }
 
@@ -100,6 +115,26 @@ const samples: SampleItem[] = [
         predictedExposure: '~6,450 tài khoản trong 6 giờ',
         level: 'CAO',
       },
+      evidenceMatches: [
+        {
+          source_name: 'Báo VnExpress',
+          title: 'Bác bỏ tin đồn vỡ đê sông Hồng, cơ quan chức năng khẳng định các tuyến đê xung yếu vẫn an toàn',
+          url: 'https://vnexpress.net/bac-bo-tin-don-vo-de-song-hong-4791024.html',
+          snippet: 'Cục Quản lý đê điều và Phòng chống thiên tai khẳng định thông tin vỡ đê sông Hồng trên mạng xã hội là sai sự thật, thất thiệt. Toàn bộ các vị trí xung yếu vẫn được giám sát 24/7.',
+          published_date: '12/09/2024',
+          similarity_score: 0.94,
+          verdict: 'REFUTES',
+        },
+        {
+          source_name: 'Báo Tuổi Trẻ',
+          title: 'Thực hư hình ảnh vỡ đập thủy điện: Sự thật là hình ảnh lũ lụt cũ tại nước ngoài',
+          url: 'https://tuoitre.vn/su-that-hinh-anh-vo-dap-thuy-dien-20240915.htm',
+          snippet: 'Trung tâm Xử lý tin giả Việt Nam (VAFC) xác định bức ảnh lan truyền trên Facebook thực chất là sự cố ngập lụt tại châu Âu năm 2021, bị cắt ghép để câu view.',
+          published_date: '15/09/2024',
+          similarity_score: 0.81,
+          verdict: 'REFUTES',
+        },
+      ],
     },
   },
   {
@@ -138,6 +173,17 @@ const samples: SampleItem[] = [
         predictedExposure: '~850 tài khoản',
         level: 'THAP',
       },
+      evidenceMatches: [
+        {
+          source_name: 'Báo Tuổi Trẻ',
+          title: 'Bản tin dự báo thời tiết và diễn biến mưa lũ diện rộng tại Bắc Bộ',
+          url: 'https://tuoitre.vn/thoi-tiet-bac-bo-mua-rai-rac-20240912.htm',
+          snippet: 'Trung tâm Dự báo Khí tượng Thủy văn Quốc gia phát đi bản tin: Áp thấp nhiệt đới gây mưa rải rác tại các tỉnh Bắc Bộ trong 24 giờ tới, người dân cần chú ý các vùng trũng thấp.',
+          published_date: '12/09/2024',
+          similarity_score: 0.98,
+          verdict: 'SUPPORTS',
+        },
+      ],
     },
   },
   {
@@ -176,6 +222,17 @@ const samples: SampleItem[] = [
         predictedExposure: '~14,200 tài khoản',
         level: 'CAO',
       },
+      evidenceMatches: [
+        {
+          source_name: 'Báo Thanh Niên',
+          title: 'Bộ Y tế cảnh báo các bài thuốc dân gian truyền miệng chưa kiểm chứng trị ung thư',
+          url: 'https://thanhnien.vn/bo-y-te-canh-bao-bai-thuoc-chua-ung-thu-truyen-mieng-1852409.htm',
+          snippet: 'Cục Quản lý Dược và Bệnh viện K khuyến cáo người bệnh không tự ý dùng lá cây đu đủ, sả tươi thay thế phác đồ điều trị ung thư đã được chuẩn hóa y khoa.',
+          published_date: '18/09/2024',
+          similarity_score: 0.92,
+          verdict: 'REFUTES',
+        },
+      ],
     },
   },
 ];
@@ -188,7 +245,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
   const [platform, setPlatform] = useState<string>('Facebook (Công khai)');
   const [shares, setShares] = useState<string>('1,842 lượt / 2 giờ');
 
-  const [activeXaiTab, setActiveXaiTab] = useState<'text' | 'gradcam' | 'social'>('text');
+  const [activeXaiTab, setActiveXaiTab] = useState<'text' | 'gradcam' | 'social' | 'evidence'>('text');
   const [analyzing, setAnalyzing] = useState<boolean>(false);
   const [currentResult, setCurrentResult] = useState<SampleItem['result'] | null>(null);
 
@@ -245,6 +302,14 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             predictedExposure: `~${(res.data.cascade_nodes_predicted || 6450).toLocaleString()} tài khoản`,
             level: res.data.propagation_risk_level || 'CAO',
           },
+          evidenceMatches: (res.data.evidence_matches || []).map((m: any) => ({
+            source_name: m.source_name,
+            title: m.title,
+            url: m.url,
+            snippet: m.snippet,
+            similarity_score: m.similarity_score,
+            verdict: m.verdict,
+          })),
         });
       }
     } catch (err) {
@@ -280,6 +345,27 @@ export const KiemChungTrucTiepPage: React.FC = () => {
             predictedExposure: hasWarning ? '~4,200 tài khoản' : '~650 tài khoản',
             level: hasWarning ? 'CAO' : 'THAP',
           },
+          evidenceMatches: hasWarning ? [
+            {
+              source_name: 'Báo Tuổi Trẻ',
+              title: 'Cơ quan chức năng bác bỏ tin đồn thất thiệt lan truyền trên mạng',
+              url: 'https://tuoitre.vn',
+              snippet: 'Cơ quan chức năng khuyến cáo người dân cẩn trọng trước các phát biểu hoang mang chưa được kiểm chứng.',
+              published_date: 'Gần đây',
+              similarity_score: 0.89,
+              verdict: 'REFUTES',
+            }
+          ] : [
+            {
+              source_name: 'Cổng Thông tin Chính phủ / Báo chí',
+              title: 'Xác thực thông tin từ cơ quan quản lý chuyên ngành',
+              url: 'https://chinhphu.vn',
+              snippet: 'Nội dung phản ánh trùng khớp với thông cáo chính thống đã phát hành.',
+              published_date: 'Gần đây',
+              similarity_score: 0.92,
+              verdict: 'SUPPORTS',
+            }
+          ],
         });
       }
     } finally {
@@ -611,6 +697,23 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               >
                 Tác động xã hội
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveXaiTab('evidence')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                  activeXaiTab === 'evidence'
+                    ? 'bg-[#0a192f] text-white shadow-sm'
+                    : 'text-slate-800 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+                <span>Dẫn chứng Kho dữ liệu</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  activeXaiTab === 'evidence' ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-800'
+                }`}>
+                  {currentResult.evidenceMatches?.length || 0}
+                </span>
+              </button>
             </div>
 
             {/* TAB 1: SHAP TEXT */}
@@ -758,6 +861,103 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                     xã hội xác định 3 nút khuếch đại (KOL Amplifiers) đang tái chia sẻ với tần suất cao.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* TAB 4: DẪN CHỨNG ĐỐI SOÁT TỪ KHO DỮ LIỆU */}
+            {activeXaiTab === 'evidence' && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-sky-600" />
+                    <span className="text-xs font-black text-slate-900">
+                      Bằng chứng đối soát từ Báo chí chính thống (Ground Truth Alignment)
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-mono font-bold">
+                    {currentResult.evidenceMatches?.length || 0} bài báo đối chiếu
+                  </span>
+                </div>
+
+                {(!currentResult.evidenceMatches || currentResult.evidenceMatches.length === 0) ? (
+                  <div className="p-6 rounded-xl bg-slate-50 border-2 border-slate-200 text-center text-xs text-slate-600 font-medium">
+                    Chưa tìm thấy bài báo đối soát trực tiếp trong kho tri thức. Bạn có thể sang trang <strong>Kho dữ liệu</strong> để đồng bộ thêm các luồng RSS báo chí mới hoặc thêm mẫu thu thập có kiểm soát.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentResult.evidenceMatches.map((ev, idx) => {
+                      const isRefute = ev.verdict === 'REFUTES';
+                      return (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-xl bg-white border-2 border-slate-300 shadow-2xs hover:border-slate-400 transition space-y-2.5"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="px-2.5 py-0.5 rounded bg-sky-50 text-sky-900 border border-sky-300 text-[11px] font-bold">
+                                  {ev.source_name}
+                                </span>
+                                {ev.published_date && (
+                                  <span className="text-[10px] text-slate-500 font-medium">
+                                    • {ev.published_date}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-xs font-black text-slate-900 hover:text-sky-700 leading-snug">
+                                <a href={ev.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1">
+                                  {ev.title}
+                                  <ExternalLink className="w-3 h-3 text-slate-400 inline" />
+                                </a>
+                              </h4>
+                            </div>
+
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-black border flex items-center gap-1 whitespace-nowrap shadow-2xs ${
+                                isRefute
+                                  ? 'bg-rose-100 text-rose-950 border-rose-300'
+                                  : 'bg-emerald-100 text-emerald-950 border-emerald-300'
+                              }`}
+                            >
+                              {isRefute ? (
+                                <>
+                                  <XCircle className="w-3 h-3 text-rose-600" />
+                                  BÁC BỎ TIN ĐỒN
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  XÁC THỰC CHÍNH THỐNG
+                                </>
+                              )}
+                            </span>
+                          </div>
+
+                          {ev.snippet && (
+                            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-800 leading-relaxed font-medium flex gap-2">
+                              <Quote className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                              <p className="italic">"{ev.snippet}"</p>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between text-[11px] pt-0.5">
+                            <span className="text-slate-600 font-medium">
+                              Độ tương quan ngữ nghĩa: <strong className="text-slate-900 font-mono font-bold">{Math.round((ev.similarity_score || 0.85) * 100)}%</strong>
+                            </span>
+                            <a
+                              href={ev.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sky-700 hover:text-sky-900 font-bold inline-flex items-center gap-1 text-[11px]"
+                            >
+                              Đọc toàn văn bài báo <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

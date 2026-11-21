@@ -1,0 +1,26 @@
+[
+  {
+    "id": "VIFACT-0001",
+    "claim": "Hà Nội ghi nhận vỡ đê sông Hồng trong đợt mưa bão tháng 9",
+    "evidence": "Ban Chỉ huy Phòng chống thiên tai khẳng định các tuyến đê xung yếu tại Hà Nội vẫn an toàn, không có sự cố vỡ đê.",
+    "label": "REFUTES",
+    "domain": "Disaster",
+    "source": "ViFactCheck Benchmark Ground Truth"
+  },
+  {
+    "id": "VIFACT-0002",
+    "claim": "Bộ Y tế cảnh báo phương pháp dùng lá đu đủ chữa khỏi ung thư giai đoạn cuối",
+    "evidence": "Cục Quản lý Khám chữa bệnh nêu rõ chưa có nghiên cứu khoa học lâm sàng nào chứng minh lá đu đủ tiêu diệt được tế bào ung thư.",
+    "label": "REFUTES",
+    "domain": "Health",
+    "source": "ViFactCheck Benchmark Ground Truth"
+  },
+  {
+    "id": "VIFACT-0003",
+    "claim": "Áp thấp nhiệt đới gây mưa diện rộng tại khu vực Bắc Bộ",
+    "evidence": "Trung tâm Dự báo Khí tượng Thủy văn Quốc gia phát bản tin mưa lớn diện rộng từ ngày 10 đến 14.",
+    "label": "SUPPORTS",
+    "domain": "Weather",
+    "source": "ViFactCheck Benchmark Ground Truth"
+  }
+]

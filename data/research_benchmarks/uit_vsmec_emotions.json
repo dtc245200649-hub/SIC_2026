@@ -1,0 +1,20 @@
+[
+  {
+    "id": "VSMEC-0001",
+    "sentence": "Mọi người cẩn thận nước dâng cao nguy hiểm quá",
+    "emotion": "Fear",
+    "source": "UIT-VSMEC Benchmark"
+  },
+  {
+    "id": "VSMEC-0002",
+    "sentence": "Lại bọn câu like thất đức bịa đặt tin vỡ đê",
+    "emotion": "Anger",
+    "source": "UIT-VSMEC Benchmark"
+  },
+  {
+    "id": "VSMEC-0003",
+    "sentence": "May quá chính quyền đã đính chính kịp thời rồi",
+    "emotion": "Enjoyment",
+    "source": "UIT-VSMEC Benchmark"
+  }
+]

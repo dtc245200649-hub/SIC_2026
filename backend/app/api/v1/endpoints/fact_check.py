@@ -7,8 +7,11 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.models.evidence import EvidenceDocument, EvidenceSource
 from app.services.rss_collector import RssCollectorService
+from datetime import datetime, timezone
+from urllib.parse import urlparse
 from app.schemas.fact_check import (
     EvidenceDocumentOut,
+    EvidenceDocumentCreate,
     FactCheckSearchResponse,
     ClaimVerifyRequest,
     ClaimVerifyResponse,
@@ -72,6 +75,55 @@ def get_evidence(
         total=total,
         items=[EvidenceDocumentOut.model_validate(d) for d in documents],
     )
+
+
+@router.post(
+    "/evidence",
+    response_model=EvidenceDocumentOut,
+    summary="Thêm bài báo / mẫu kiểm chứng mới vào kho tri thức",
+    description="Lưu trữ tài liệu kiểm chứng từ báo chí chính thống hoặc mẫu công khai có kiểm soát.",
+)
+def create_evidence(
+    payload: EvidenceDocumentCreate,
+    db: Session = Depends(get_db),
+):
+    source_domain = payload.source_domain
+    if not source_domain:
+        try:
+            source_domain = urlparse(payload.url).netloc or "baochinhthong.vn"
+        except Exception:
+            source_domain = "baochinhthong.vn"
+
+    source = db.scalar(
+        select(EvidenceSource).where(
+            or_(
+                EvidenceSource.name == payload.source_name,
+                EvidenceSource.domain == source_domain,
+            )
+        )
+    )
+    if not source:
+        source = EvidenceSource(
+            name=payload.source_name,
+            domain=source_domain,
+            url=f"https://{source_domain}",
+            reliability_score=payload.reliability_score,
+            is_official=True,
+        )
+        db.add(source)
+        db.flush()
+
+    new_doc = EvidenceDocument(
+        source_id=source.id,
+        title=payload.title.strip(),
+        url=payload.url.strip(),
+        snippet=payload.snippet.strip(),
+        published_date=payload.published_date or datetime.now(timezone.utc),
+    )
+    db.add(new_doc)
+    db.commit()
+    db.refresh(new_doc)
+    return EvidenceDocumentOut.model_validate(new_doc)
 
 
 @router.post(
