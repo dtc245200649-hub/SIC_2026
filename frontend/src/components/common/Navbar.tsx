@@ -12,12 +12,12 @@ export const Navbar: React.FC = () => {
   const primaryRole = user?.roles?.[0]?.name || (user?.is_superuser ? 'Admin' : 'Analyst');
 
   return (
-    <header className="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-3">
-        <h1 className="text-base font-semibold text-slate-100 hidden sm:block">
-          Học sâu Đa phương thức & Giải thích XAI
+        <h1 className="text-sm font-bold text-slate-900 hidden sm:block">
+          ViFact XAI · Hệ thống Học sâu Đa phương thức
         </h1>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
           <span>PhoBERT + ViT + Whisper</span>
         </div>
@@ -26,16 +26,16 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center gap-4">
         {user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60">
-              <div className="w-7 h-7 rounded-full bg-brand-600/30 border border-brand-500/40 flex items-center justify-center text-brand-400">
-                <UserIcon className="w-4 h-4" />
+            <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200">
+              <div className="w-7 h-7 rounded-full bg-[#0a192f] text-white flex items-center justify-center text-xs font-bold">
+                <UserIcon className="w-4 h-4 text-sky-300" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs font-medium text-slate-200 leading-none">
+                <span className="text-xs font-bold text-slate-800 leading-none">
                   {user.full_name || user.username}
                 </span>
-                <span className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                  <Shield className="w-2.5 h-2.5 text-brand-400" />
+                <span className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                  <Shield className="w-2.5 h-2.5 text-sky-600" />
                   {primaryRole}
                 </span>
               </div>
@@ -43,7 +43,7 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition-colors"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
               title="Đăng xuất"
             >
               <LogOut className="w-4 h-4" />
@@ -52,7 +52,7 @@ export const Navbar: React.FC = () => {
         ) : (
           <a
             href="/login"
-            className="text-xs px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition-colors"
+            className="text-xs px-3.5 py-1.5 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-semibold transition-colors"
           >
             Đăng nhập
           </a>
@@ -61,3 +61,5 @@ export const Navbar: React.FC = () => {
     </header>
   );
 };
+
+export default Navbar;

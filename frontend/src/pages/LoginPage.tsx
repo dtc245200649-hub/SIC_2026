@@ -1,193 +1,262 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { BrainCircuit, Lock, User, AlertCircle, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, BarChart3, AlertCircle, Sparkles } from 'lucide-react';
 import { authService } from '../services/auth.service';
+import { NetworkIllustration } from '../components/common/NetworkIllustration';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLocked, setIsLocked] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!emailOrUsername.trim() || !password.trim()) {
+      setErrorMsg('Vui lòng điền đầy đủ tài khoản/email và mật khẩu.');
+      return;
+    }
+
     setErrorMsg(null);
-    setIsLocked(false);
     setLoading(true);
 
     try {
       await authService.login({
-        username_or_email: usernameOrEmail,
+        username_or_email: emailOrUsername.trim(),
         password,
       });
       navigate('/');
     } catch (err: any) {
-      const detail = err.response?.data?.detail || 'Đã có lỗi xảy ra khi đăng nhập.';
+      const detail = err.response?.data?.detail || 'Đã có lỗi xảy ra khi đăng nhập vào hệ thống.';
       setErrorMsg(detail);
-      if (err.response?.status === 403 && detail.includes('khóa')) {
-        setIsLocked(true);
-      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleFillDemo = (username: string, pass: string) => {
+    setEmailOrUsername(username);
+    setPassword(pass);
+    setErrorMsg(null);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo & Heading */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 shadow-xl shadow-brand-500/20 mb-4">
-            <BrainCircuit className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Hệ Thống SIC DETECT</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Phát hiện Thông tin Sai lệch Đa phương thức & Phân tích Mạng xã hội
-          </p>
-        </div>
-
-        {/* Login Card */}
-        <div className="glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl">
-          <h3 className="text-lg font-semibold text-white mb-2">Đăng nhập tài khoản</h3>
-          <p className="text-xs text-slate-400 mb-6">
-            Nhập tài khoản hoặc địa chỉ email của bạn để truy cập hệ thống.
-          </p>
-
-          {/* Error / Lockout Alert */}
-          {errorMsg && (
-            <div
-              className={`p-4 rounded-xl mb-6 flex items-start gap-3 text-sm ${
-                isLocked
-                  ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
-                  : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
-              }`}
-            >
-              {isLocked ? (
-                <ShieldAlert className="w-5 h-5 flex-shrink-0 text-rose-400 mt-0.5" />
-              ) : (
-                <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-400 mt-0.5" />
-              )}
-              <div className="flex-1">
-                <p className="font-semibold">{isLocked ? 'Cảnh báo bảo mật:' : 'Thông báo:'}</p>
-                <p className="text-xs mt-0.5 leading-relaxed">{errorMsg}</p>
+    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex items-center justify-center p-4 lg:p-8 select-none">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        {/* LEFT COLUMN: BRANDING & RESEARCH SHOWCASE (7/12) */}
+        <div className="lg:col-span-7 space-y-6 pr-0 lg:pr-6">
+          {/* Top Logo & Version Badge */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#0a192f] flex items-center justify-center text-white shadow-md">
+                <Sparkles className="w-5 h-5 text-sky-400" />
               </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Tên đăng nhập hoặc Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <User className="w-4 h-4" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={usernameOrEmail}
-                  onChange={(e) => setUsernameOrEmail(e.target.value)}
-                  placeholder="ví dụ: analyst@sic.edu.vn"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
-                />
+              <div>
+                <h1 className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                  ViFact XAI
+                </h1>
+                <p className="text-[11px] text-slate-500 mt-1">Hệ thống Học sâu Đa phương thức</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
-                />
-              </div>
-            </div>
-
-            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-1">
-              <span>Bảo vệ Brute-force: Khóa 15 phút sau 5 lần sai</span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-emerald-500 hover:from-brand-500 hover:to-emerald-400 text-white font-medium text-sm shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Đăng nhập hệ thống</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Quick Fill Test Accounts */}
-          <div className="mt-5 pt-4 border-t border-slate-800/80">
-            <span className="text-[11px] font-semibold text-slate-400 block mb-2 text-center uppercase tracking-wider">
-              Tài khoản mẫu thử nghiệm (Click để điền nhanh):
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+              v2.4 · Research
             </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setUsernameOrEmail('admin');
-                  setPassword('AdminPassword123!');
-                }}
-                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-brand-500/50 text-[11px] text-brand-400 font-medium transition hover:bg-slate-800"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setUsernameOrEmail('researcher');
-                  setPassword('ResearcherPassword123!');
-                }}
-                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-sky-500/50 text-[11px] text-sky-400 font-medium transition hover:bg-slate-800"
-              >
-                Researcher
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setUsernameOrEmail('analyst');
-                  setPassword('AnalystPassword123!');
-                }}
-                className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-amber-500/50 text-[11px] text-amber-400 font-medium transition hover:bg-slate-800"
-              >
-                Analyst
-              </button>
-            </div>
           </div>
 
-          <div className="mt-4 pt-3 text-center">
-            <p className="text-xs text-slate-400">
-              Chưa có tài khoản nghiên cứu viên?{' '}
-              <Link to="/register" className="text-brand-400 hover:underline font-medium">
-                Đăng ký ngay
-              </Link>
+          {/* Title & Description */}
+          <div className="space-y-2">
+            <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+              Phát hiện thông tin sai lệch <br />& Phân tích tác động xã hội
+            </h2>
+            <p className="text-xs lg:text-sm text-slate-600 leading-relaxed max-w-xl">
+              Không gian nghiên cứu tích hợp mô hình học sâu đa phương thức (văn bản tiếng Việt, hình ảnh) cùng cơ chế giải thích XAI và đồ thị lan truyền trên mạng xã hội Việt Nam.
             </p>
           </div>
+
+          {/* Network Graph Illustration */}
+          <NetworkIllustration />
+
+          {/* 2 Feature Callout Boxes */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200/60 flex items-center justify-center text-sky-600 shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="text-xs">
+                <strong className="text-slate-900 block font-semibold mb-0.5">
+                  Giải thích XAI đa phương thức
+                </strong>
+                <p className="text-slate-500 leading-relaxed text-[11px]">
+                  Trực quan hóa trọng số chú ý trên văn bản (PhoBERT) và vùng ảnh nghi vấn (Grad-CAM) cho từng kết luận.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200/60 flex items-center justify-center text-indigo-600 shrink-0 mt-0.5">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div className="text-xs">
+                <strong className="text-slate-900 block font-semibold mb-0.5">
+                  Đo lường tác động & Lan truyền
+                </strong>
+                <p className="text-slate-500 leading-relaxed text-[11px]">
+                  Theo dõi tốc độ khuếch tán, độ phân cực bình luận và mức độ ảnh hưởng theo từng cụm chủ đề.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Dataset Stat Footer */}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-200/70 font-mono">
+            <span>Tập dữ liệu chuẩn hóa tiếng Việt · ViSocial-Fake</span>
+            <span className="font-semibold text-slate-700">12,480 mẫu</span>
+          </div>
         </div>
+
+        {/* RIGHT COLUMN: LOGIN CARD (5/12) */}
+        <div className="lg:col-span-5">
+          <div className="bg-white border border-slate-200 rounded-3xl p-7 lg:p-9 shadow-sm space-y-5">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Đăng nhập hệ thống</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Truy cập không gian thử nghiệm mô hình và bảng phân tích tác động xã hội.
+              </p>
+            </div>
+
+            {errorMsg && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email / Username */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Địa chỉ Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    placeholder="ten@email.com"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                  />
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Nhập email đã đăng ký hoặc dùng tài khoản trình diễn
+                </span>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Mật khẩu
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Nhập mật khẩu"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember & Forgot */}
+              <div className="flex items-center justify-between text-xs pt-0.5">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-slate-300 text-slate-900 focus:ring-sky-500"
+                  />
+                  <span>Ghi nhớ phiên làm việc</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => alert('Vui lòng liên hệ Quản trị viên để đặt lại mật khẩu.')}
+                  className="text-slate-500 hover:text-slate-800 text-[11px]"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
+
+              {/* Primary Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white font-semibold text-xs shadow-sm transition disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Đang xác thực...' : 'Đăng nhập hệ thống'}
+              </button>
+
+              {/* Divider */}
+              <div className="relative my-3 text-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200"></div>
+                </div>
+                <span className="relative px-3 bg-white text-[11px] text-slate-400 font-medium">
+                  hoặc
+                </span>
+              </div>
+
+              {/* Secondary Buttons */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => alert('Tính năng đăng nhập OTP qua Email đã sẵn sàng cho tài khoản liên kết.')}
+                  className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <Mail className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Đăng nhập bằng mã OTP qua Email</span>
+                </button>
+
+                <Link
+                  to="/register"
+                  className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs flex items-center justify-center gap-2 transition block text-center"
+                >
+                  <span>Đăng ký tài khoản mới</span>
+                </Link>
+              </div>
+            </form>
+
+            {/* Demo Credentials Helper */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400">Chế độ trình diễn đồ án:</span>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('admin', 'Admin@123456')}
+                className="text-sky-700 hover:text-sky-900 font-semibold cursor-pointer underline"
+              >
+                Điền tài khoản Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
+
+export default LoginPage;
