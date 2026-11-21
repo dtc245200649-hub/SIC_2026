@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Sparkles,
-  TrendingUp,
-  Share2,
-  AlertTriangle,
-  ChevronDown,
-  LogOut,
-  User as UserIcon,
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -18,7 +9,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import { authService } from '../services/auth.service';
 
 const viralTrendData = [
   { time: '0h', fake: 12, real: 8 },
@@ -64,75 +54,9 @@ const monitoredClusters = [
 export const SocialGraphPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState('7 ngày qua');
   const [selectedPlatform, setSelectedPlatform] = useState('Tất cả nền tảng');
-  const user = authService.getCurrentUser();
-  const userName = user?.full_name || user?.username || 'Minh Anh';
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
-      {/* Top Breadcrumb & Quick Filter Header Bar matching Image */}
-      <div className="bg-white border-2 border-slate-300 rounded-2xl px-5 py-3 shadow-xs flex flex-wrap items-center justify-between gap-4">
-        {/* Brand & Subnav */}
-        <div className="flex items-center gap-6 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#0a192f] flex items-center justify-center text-white shadow-2xs">
-              <Sparkles className="w-4 h-4 text-sky-400 stroke-[2.2]" />
-            </div>
-            <span className="font-black text-sm text-slate-900 tracking-tight">ViFact XAI</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-xs font-bold">
-            <Link
-              to="/checker"
-              className="px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition"
-            >
-              Kiểm chứng
-            </Link>
-            <span className="px-3 py-1.5 rounded-lg bg-[#0a192f] text-white shadow-2xs font-extrabold">
-              Tác động xã hội
-            </span>
-            <Link
-              to="/"
-              className="px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition"
-            >
-              So sánh mô hình
-            </Link>
-            <Link
-              to="/history"
-              className="px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition"
-            >
-              Kho dữ liệu
-            </Link>
-            <Link
-              to="/checker"
-              className="px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition"
-            >
-              Đánh giá
-            </Link>
-            <Link
-              to="/history"
-              className="px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition"
-            >
-              Báo cáo
-            </Link>
-          </div>
-        </div>
-
-        {/* User Mini Actions */}
-        <div className="flex items-center gap-3 text-xs font-bold">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 border border-slate-300 text-slate-800">
-            <UserIcon className="w-3.5 h-3.5 text-sky-600 stroke-[2.2]" />
-            <span>{userName}</span>
-          </div>
-          <button
-            onClick={() => authService.logout()}
-            className="flex items-center gap-1 text-slate-600 hover:text-rose-700 transition cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5 stroke-[2.2]" />
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      </div>
-
       {/* Page Title & Filter Selectors */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div>
