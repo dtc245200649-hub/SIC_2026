@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Layers,
@@ -12,30 +12,46 @@ import {
   Share2,
   History,
   Users,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 
-interface NavItem {
+interface SubNavItem {
   name: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
   tag?: string;
 }
 
-const navItems: NavItem[] = [
-  { name: 'Dashboard Tổng quan', path: '/', icon: LayoutDashboard },
-  { name: 'Đa phương thức (Core)', path: '/analysis/multimodal', icon: Layers, tag: 'AI Core' },
-  { name: 'Phân tích Văn bản', path: '/analysis/text', icon: FileText },
-  { name: 'Phân tích Hình ảnh', path: '/analysis/image', icon: Image },
-  { name: 'Phân tích Video', path: '/analysis/video', icon: Video },
-  { name: 'Phân tích Âm thanh', path: '/analysis/audio', icon: Mic },
-  { name: 'Giải thích AI (XAI)', path: '/results/xai', icon: BrainCircuit, tag: 'XAI' },
-  { name: 'Kiểm chứng Bằng chứng', path: '/fact-check', icon: ShieldCheck },
-  { name: 'Đồ thị Mạng xã hội (GNN)', path: '/social-graph', icon: Share2, tag: 'GNN' },
-  { name: 'Lịch sử Phân tích', path: '/history', icon: History },
-  { name: 'Quản lý Người dùng', path: '/users', icon: Users },
-];
+interface NavItem {
+  name: string;
+  path?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  tag?: string;
+  children?: SubNavItem[];
+}
 
 export const Sidebar: React.FC = () => {
+  const location = useLocation();
+  const isAnalysisActive = location.pathname.startsWith('/analysis');
+  const [analysisOpen, setAnalysisOpen] = useState(true);
+
+  // Tự động mở nhóm khi người dùng chuyển trang vào bất kỳ mục con nào trong /analysis
+  useEffect(() => {
+    if (isAnalysisActive) {
+      setAnalysisOpen(true);
+    }
+  }, [isAnalysisActive]);
+
+  const analysisSubItems: SubNavItem[] = [
+    { name: 'Đa phương thức (Core)', path: '/analysis/multimodal', icon: Layers, tag: 'Core' },
+    { name: 'Phân tích Văn bản', path: '/analysis/text', icon: FileText },
+    { name: 'Phân tích Hình ảnh', path: '/analysis/image', icon: Image },
+    { name: 'Phân tích Video', path: '/analysis/video', icon: Video },
+    { name: 'Phân tích Âm thanh', path: '/analysis/audio', icon: Mic },
+  ];
+
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-30 select-none">
       {/* Brand Header */}
@@ -56,32 +72,175 @@ export const Sidebar: React.FC = () => {
         <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
           Menu Nghiên Cứu & Phân Tích
         </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  isActive
-                    ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`
-              }
-            >
-              <div className="flex items-center gap-3">
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{item.name}</span>
-              </div>
-              {item.tag && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">
-                  {item.tag}
-                </span>
+
+        {/* 1. Dashboard Tổng quan */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Dashboard Tổng quan</span>
+          </div>
+        </NavLink>
+
+        {/* 2. NHÓM PHÂN TÍCH AI (GOM GỌN 5 MỤC VÀO 1 DROPDOWN) */}
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => setAnalysisOpen(!analysisOpen)}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isAnalysisActive
+                ? 'bg-slate-800/80 text-brand-400 border border-slate-700/60'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 flex-shrink-0 text-brand-400" />
+              <span className="truncate font-semibold">Phân tích AI</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30 font-mono">
+                AI Core
+              </span>
+              {analysisOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" />
               )}
-            </NavLink>
-          );
-        })}
+            </div>
+          </button>
+
+          {/* Sub-items được thụt lề và gom gọn khi mở */}
+          {analysisOpen && (
+            <div className="ml-3 pl-3 border-l border-slate-800 space-y-1 pt-1 animate-fadeIn">
+              {analysisSubItems.map((sub) => {
+                const SubIcon = sub.icon;
+                return (
+                  <NavLink
+                    key={sub.path}
+                    to={sub.path}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-brand-600/20 text-brand-300 border border-brand-500/40 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                      }`
+                    }
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{sub.name}</span>
+                    </div>
+                    {sub.tag && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                        {sub.tag}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 3. Giải thích AI (XAI) */}
+        <NavLink
+          to="/results/xai"
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <BrainCircuit className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Giải thích AI (XAI)</span>
+          </div>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+            XAI
+          </span>
+        </NavLink>
+
+        {/* 4. Kiểm chứng Bằng chứng */}
+        <NavLink
+          to="/fact-check"
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Kiểm chứng Bằng chứng</span>
+          </div>
+        </NavLink>
+
+        {/* 5. Đồ thị Mạng xã hội (GNN) */}
+        <NavLink
+          to="/social-graph"
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <Share2 className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Đồ thị Mạng xã hội (GNN)</span>
+          </div>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+            GNN
+          </span>
+        </NavLink>
+
+        {/* 6. Lịch sử Phân tích */}
+        <NavLink
+          to="/history"
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <History className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Lịch sử Phân tích</span>
+          </div>
+        </NavLink>
+
+        {/* 7. Quản lý Người dùng */}
+        <NavLink
+          to="/users"
+          className={({ isActive }) =>
+            `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-brand-600/15 text-brand-400 border border-brand-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`
+          }
+        >
+          <div className="flex items-center gap-3">
+            <Users className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Quản lý Người dùng</span>
+          </div>
+        </NavLink>
       </nav>
 
       {/* Footer Info */}
@@ -95,3 +254,5 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
+
+export default Sidebar;
