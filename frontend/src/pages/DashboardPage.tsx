@@ -4,7 +4,6 @@ import {
   FileText,
   Image,
   Video,
-  Mic,
   Layers,
   CheckCircle2,
   AlertTriangle,
@@ -38,11 +37,10 @@ const trendData = [
 ];
 
 const modalityDistribution = [
-  { name: 'Đa phương thức (Multimodal)', value: 45, color: '#059669' },
+  { name: 'Đa phương thức (Multimodal)', value: 50, color: '#059669' },
   { name: 'Văn bản (Text)', value: 25, color: '#0284c7' },
   { name: 'Hình ảnh (Image)', value: 15, color: '#d97706' },
   { name: 'Video & Keyframes', value: 10, color: '#e11d48' },
-  { name: 'Âm thanh (Audio)', value: 5, color: '#7c3aed' },
 ];
 
 const recentAnalyses = [
@@ -75,8 +73,8 @@ const recentAnalyses = [
   },
   {
     id: 104,
-    title: 'Băng ghi âm cắt ghép phát ngôn lãnh đạo về chính sách đất đai',
-    modality: 'AUDIO',
+    title: 'Video cắt ghép phát ngôn lãnh đạo về chính sách đất đai',
+    modality: 'VIDEO',
     prediction: 'CHUA_DU_THONG_TIN',
     confidence: 0.61,
     inconsistency: 0.40,
@@ -126,7 +124,7 @@ export const DashboardPage: React.FC = () => {
             Nền tảng Giám sát & Phát hiện Tin giả Mạng xã hội Việt Nam
           </h2>
           <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-medium">
-            Hệ thống phân tích đồng thời Văn bản (PhoBERT), Thị giác (ViT), Giọng nói (Whisper) kết hợp cơ chế Cross-modal Attention và đối soát chứng cứ báo chí chính thống.
+            Hệ thống phân tích đồng thời Văn bản (PhoBERT), Thị giác (ViT), Video (Keyframes & Âm thanh video) kết hợp cơ chế Cross-modal Attention và đối soát chứng cứ báo chí chính thống.
           </p>
         </div>
 
@@ -183,9 +181,9 @@ export const DashboardPage: React.FC = () => {
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
             Lối tắt Phân tích theo Phương thức
           </h3>
-          <span className="text-xs text-slate-500 font-medium">5 mô hình đơn / đa phương thức</span>
+          <span className="text-xs text-slate-500 font-medium">4 mô hình đơn / đa phương thức</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to="/analysis/multimodal"
             className="p-4 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-300 hover:border-emerald-500 transition group flex flex-col items-center text-center shadow-2xs"
@@ -194,7 +192,7 @@ export const DashboardPage: React.FC = () => {
               <Layers className="w-5 h-5 stroke-[2.2]" />
             </div>
             <span className="text-xs font-bold text-slate-900">Đa phương thức</span>
-            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Text + Visual + Audio</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Text + Visual + Video</span>
           </Link>
 
           <Link
@@ -227,18 +225,7 @@ export const DashboardPage: React.FC = () => {
               <Video className="w-5 h-5 stroke-[2.2]" />
             </div>
             <span className="text-xs font-bold text-slate-900">Video (Keyframes)</span>
-            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">OpenCV Temporal</span>
-          </Link>
-
-          <Link
-            to="/analysis/audio"
-            className="p-4 rounded-xl bg-slate-50 hover:bg-purple-50/60 border border-slate-300 hover:border-purple-500 transition group flex flex-col items-center text-center shadow-2xs"
-          >
-            <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center mb-2 group-hover:scale-105 transition border border-purple-300">
-              <Mic className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <span className="text-xs font-bold text-slate-900">Âm thanh (Audio)</span>
-            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">Whisper STT</span>
+            <span className="text-[11px] text-slate-600 mt-0.5 font-medium">OpenCV + Audio Track</span>
           </Link>
         </div>
       </div>

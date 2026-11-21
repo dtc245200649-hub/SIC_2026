@@ -6,7 +6,6 @@ import {
   FileText,
   Image,
   Video,
-  Mic,
   BrainCircuit,
   ShieldCheck,
   Share2,
@@ -47,7 +46,6 @@ const navSections: NavSection[] = [
       { name: 'Phân tích Văn bản', path: '/analysis/text', icon: FileText },
       { name: 'Phân tích Hình ảnh', path: '/analysis/image', icon: Image },
       { name: 'Phân tích Video', path: '/analysis/video', icon: Video },
-      { name: 'Phân tích Âm thanh', path: '/analysis/audio', icon: Mic },
     ],
   },
   {
