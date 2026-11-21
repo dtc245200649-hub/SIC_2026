@@ -1,0 +1,5 @@
+sample_id,label,annotation_status,annotator_id,confidence,annotation_time
+FB_00001,1,verified,ANN_01,0.98,2024-09-11 09:00:00
+FB_00002,0,verified,ANN_01,0.99,2024-09-12 11:00:00
+TT_00001,1,verified,ANN_02,0.99,2024-09-19 14:00:00
+TT_00002,2,pending,ANN_01,0.7,2024-10-05 19:00:00

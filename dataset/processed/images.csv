@@ -1,0 +1,5 @@
+image_id,sample_id,image_path,image_type,image_format,image_width,image_height,ocr_text,image_hash
+IMG_FB_00001_01,FB_00001,dataset/images/facebook/FB_00001.jpg,IMAGE,jpg,1280,720,CẢNH BÁO VỠ ĐÊ NỘI THÀNH SƠ TÁN KHẨN CẤP,a1f8c4e2b9d07311
+IMG_FB_00002_01,FB_00002,dataset/images/facebook/FB_00002.jpg,IMAGE,jpg,1024,768,BẢN ĐỒ VỆ TINH LƯỢNG MƯA TRUNG TÂM KTTV QUỐC GIA,f4e1c2a8b3d76501
+IMG_TT_00001_01,TT_00001,dataset/images/tiktok/TT_00001_kf01.jpg,KEYFRAME,jpg,1080,1920,UỐNG NƯỚC LÁ ĐU ĐỦ TIÊU DIỆT 100% TẾ BÀO UNG THƯ,c8b4e192f03d65a2
+IMG_TT_00002_01,TT_00002,dataset/images/tiktok/TT_00002_kf01.jpg,KEYFRAME,jpg,1080,1920,TIN ĐỒN CHUỖI SIÊU THỊ RÚT KHỎI THỊ TRƯỜNG,b2c9d8a1f4e30718

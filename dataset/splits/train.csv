@@ -1,0 +1,5 @@
+sample_id,platform,topic,label,content,image_path
+FB_00001,Facebook,disaster,1,"KHẨN CẤP: Đê sông Hồng đoạn qua nội thành vừa bị vỡ lúc 5h sáng nay, nước ngập trắng xóa cả tuyến phố lớn. Mọi người chia sẻ gấp để người dân sơ tán ngay!!!",dataset/images/facebook/FB_00001.jpg
+FB_00002,Facebook,disaster,0,"Trung tâm Dự báo Khí tượng Thủy văn Quốc gia phát đi bản tin: Áp thấp nhiệt đới gây mưa rải rác tại các tỉnh Bắc Bộ trong 24 giờ tới, người dân cần chú ý các vùng trũng thấp.",dataset/images/facebook/FB_00002.jpg
+TT_00001,TikTok,health,1,"Chấn động: Uống nước lá đu đủ kết hợp sả tươi đun sôi có thể tiêu diệt 100% tế bào ung thư sau 7 ngày điều trị, không cần phải xạ trị tốn kém!",dataset/images/tiktok/TT_00001_kf01.jpg
+TT_00002,TikTok,economy,2,Xuất hiện thông tin một chuỗi siêu thị lớn sắp ngừng hoạt động tại miền Trung do tái cấu trúc nợ từ công ty mẹ ở nước ngoài.,dataset/images/tiktok/TT_00002_kf01.jpg

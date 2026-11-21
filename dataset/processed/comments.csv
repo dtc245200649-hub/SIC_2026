@@ -1,0 +1,11 @@
+comment_id,sample_id,comment_text,comment_time,sentiment_label
+CMT_FB_00001_01,FB_00001,Mọi người ở mạn cầu Long Biên cẩn thận nước lên nhanh quá,2024-09-11 06:10:00,fear
+CMT_FB_00001_02,FB_00001,"Báo đài đã đính chính không có chuyện vỡ đê đâu, đừng chia sẻ bậy bạ",2024-09-11 06:45:00,anger
+CMT_FB_00001_03,FB_00001,"Lại tin giả câu view rồi, công an sắp phạt tới nơi",2024-09-11 07:05:00,anger
+CMT_FB_00002_01,FB_00002,Cảm ơn bản tin kịp thời của cơ quan khí tượng,2024-09-12 08:30:00,enjoyment
+CMT_FB_00002_02,FB_00002,Khu vực nhà mình sáng nay đã bắt đầu ngớt mưa rồi,2024-09-12 09:15:00,neutral
+CMT_TT_00001_01,TT_00001,Bác sĩ Bệnh viện K vừa cảnh báo đừng làm theo nguy hiểm tính mạng,2024-09-18 20:10:00,anger
+CMT_TT_00001_02,TT_00001,"Có thật không ạ, người nhà em đang điều trị xạ trị mệt mỏi quá",2024-09-18 21:00:00,fear
+CMT_TT_00001_03,TT_00001,"Đừng tin lang băm, bỏ viện là mất mạng đấy mọi người",2024-09-18 22:30:00,anger
+CMT_TT_00002_01,TT_00002,"Chưa thấy tập đoàn ra thông báo gì, mọi người đừng hoang mang",2024-10-05 15:00:00,neutral
+CMT_TT_00002_02,TT_00002,Hôm qua mình đi mua sắm thấy kệ hàng vẫn đầy đủ bình thường,2024-10-05 15:45:00,neutral
