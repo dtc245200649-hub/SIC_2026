@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -21,6 +21,7 @@ import {
   HelpCircle,
   Quote,
   BookOpen,
+  Trash2,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -241,9 +242,12 @@ export const KiemChungTrucTiepPage: React.FC = () => {
   const [selectedSampleId, setSelectedSampleId] = useState<string>('');
   const [inputText, setInputText] = useState<string>('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
-  const [mediaUrl, setMediaUrl] = useState<string>('https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=700&q=80');
+  const [mediaUrl, setMediaUrl] = useState<string>('');
+  const [urlInput, setUrlInput] = useState<string>('');
   const [platform, setPlatform] = useState<string>('Facebook (Công khai)');
-  const [shares, setShares] = useState<string>('1,842 lượt / 2 giờ');
+  const [shares, setShares] = useState<string>('');
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [activeXaiTab, setActiveXaiTab] = useState<'text' | 'gradcam' | 'social' | 'evidence'>('text');
   const [analyzing, setAnalyzing] = useState<boolean>(false);
@@ -256,8 +260,44 @@ export const KiemChungTrucTiepPage: React.FC = () => {
     setMediaUrl(sample.mediaUrl);
     setPlatform(sample.platform);
     setShares(sample.shares);
-    // Xóa kết quả cũ để người dùng nhấn nút 'Phân tích & Giải thích XAI' chủ động thực hiện suy luận
     setCurrentResult(null);
+  };
+
+  const handleResetForm = () => {
+    setSelectedSampleId('');
+    setInputText('');
+    setMediaType('image');
+    setMediaUrl('');
+    setUrlInput('');
+    setShares('');
+    setUploadedFileName('');
+    setCurrentResult(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setMediaUrl(objectUrl);
+      setUploadedFileName(file.name);
+      if (file.type.startsWith('video/')) {
+        setMediaType('video');
+      } else {
+        setMediaType('image');
+      }
+    }
+  };
+
+  const handleClearMedia = () => {
+    setMediaUrl('');
+    setUploadedFileName('');
+    setUrlInput('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleAnalyze = async (e: React.FormEvent) => {
@@ -388,7 +428,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 3 Mẫu Preset Buttons */}
+        {/* 3 Mẫu Preset Buttons + Nút Xóa form */}
         <div className="flex flex-wrap items-center gap-2.5">
           {samples.map((s) => (
             <button
@@ -403,6 +443,16 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               {s.title}
             </button>
           ))}
+
+          <button
+            type="button"
+            onClick={handleResetForm}
+            className="px-4 py-2 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+            title="Xóa trắng toàn bộ để tự nhập dữ liệu kiểm chứng mới"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-slate-600" />
+            <span>Xóa form (Tự nhập mới)</span>
+          </button>
         </div>
       </div>
 
@@ -466,20 +516,120 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Preview Container */}
-              <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-100 group">
-                <img
-                  src={mediaUrl}
-                  alt="Attached Media"
-                  className="w-full h-44 object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-3">
-                  <span className="text-[11px] text-white font-bold flex items-center gap-1.5 bg-black/75 px-2.5 py-1 rounded border border-white/20 backdrop-blur">
-                    <ImageIcon className="w-3.5 h-3.5 text-sky-300" />
-                    Đặc trưng thị giác ViT (224x224 Patch 16)
-                  </span>
+              {/* Input file ẩn để kích hoạt khi người dùng nhấn */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={mediaType === 'image' ? 'image/*' : 'video/*'}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+
+              {/* Preview Container: Dropzone khi chưa có tệp hoặc Preview khi đã tải lên */}
+              {!mediaUrl ? (
+                <div className="space-y-2">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-xl p-5 text-center cursor-pointer bg-slate-50 hover:bg-sky-50/40 transition flex flex-col items-center justify-center min-h-[145px] group"
+                  >
+                    <div className="w-11 h-11 rounded-2xl bg-white border-2 border-slate-200 text-sky-600 flex items-center justify-center mb-2 shadow-2xs group-hover:scale-105 transition-transform">
+                      {mediaType === 'image' ? (
+                        <Upload className="w-5 h-5 text-sky-600" />
+                      ) : (
+                        <VideoIcon className="w-5 h-5 text-sky-600" />
+                      )}
+                    </div>
+                    <span className="text-xs font-black text-slate-900 block mb-0.5">
+                      Nhấn để tải lên {mediaType === 'image' ? 'hình ảnh' : 'video ngắn'}
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Hỗ trợ {mediaType === 'image' ? 'PNG, JPG, WEBP' : 'MP4, WEBM'} (hoặc dán URL dưới)
+                    </span>
+                  </div>
+
+                  {/* Hoặc Dán URL ảnh/video */}
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder="Hoặc dán URL hình ảnh/video trực tiếp..."
+                      className="flex-1 p-2 rounded-xl bg-white border-2 border-slate-300 text-slate-900 text-xs font-medium placeholder-slate-400 focus:outline-none focus:border-sky-600 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (urlInput.trim()) {
+                          setMediaUrl(urlInput.trim());
+                          setUploadedFileName(urlInput.trim().split('/').pop() || 'media');
+                        }
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer whitespace-nowrap"
+                    >
+                      Dán link
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Đã có file: Hiển thị preview kèm nút Đổi tệp & Xóa tệp */
+                <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-900 group">
+                  {mediaType === 'image' ? (
+                    <img
+                      src={mediaUrl}
+                      alt="Attached Media"
+                      className="w-full h-44 object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <video
+                      src={mediaUrl}
+                      controls
+                      className="w-full h-44 object-cover object-center"
+                    />
+                  )}
+
+                  {/* Actions overlay ở góc trên bên phải */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-2.5 py-1 rounded-lg bg-black/75 hover:bg-black text-white text-[11px] font-bold border border-white/20 backdrop-blur transition cursor-pointer flex items-center gap-1"
+                    >
+                      <Upload className="w-3 h-3 text-sky-300" />
+                      <span>Đổi tệp</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearMedia}
+                      className="p-1.5 rounded-lg bg-rose-600/85 hover:bg-rose-600 text-white text-[11px] font-bold border border-white/20 backdrop-blur transition cursor-pointer"
+                      title="Xóa tệp đính kèm"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {uploadedFileName && (
+                    <div className="absolute top-2.5 left-2.5 max-w-[200px] truncate text-[10px] text-white font-mono bg-black/70 px-2 py-0.5 rounded border border-white/20 backdrop-blur">
+                      {uploadedFileName}
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-3 pointer-events-none">
+                    <span className="text-[11px] text-white font-bold flex items-center gap-1.5 bg-black/75 px-2.5 py-1 rounded border border-white/20 backdrop-blur">
+                      {mediaType === 'image' ? (
+                        <>
+                          <ImageIcon className="w-3.5 h-3.5 text-sky-300" />
+                          Đặc trưng thị giác ViT (224x224 Patch 16)
+                        </>
+                      ) : (
+                        <>
+                          <VideoIcon className="w-3.5 h-3.5 text-sky-300" />
+                          Keyframe đa tầng OpenCV
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 3. Nền tảng nguồn & Lượt chia sẻ */}
@@ -508,7 +658,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                   type="text"
                   value={shares}
                   onChange={(e) => setShares(e.target.value)}
-                  placeholder="1,842 lượt / 2 giờ"
+                  placeholder="VD: 1,842 lượt (hoặc để trống)"
                   className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-500 font-mono font-bold"
                 />
               </div>
