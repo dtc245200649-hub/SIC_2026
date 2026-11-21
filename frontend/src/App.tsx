@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { KiemChungTrucTiepPage } from './pages/KiemChungTrucTiepPage';
 import { MultimodalAnalysisPage } from './pages/MultimodalAnalysisPage';
 import { TextAnalysisPage } from './pages/TextAnalysisPage';
 import { ImageAnalysisPage } from './pages/ImageAnalysisPage';
@@ -34,7 +35,10 @@ export const App: React.FC = () => {
           }
         >
           <Route index element={<DashboardPage />} />
-          <Route path="analysis/multimodal" element={<MultimodalAnalysisPage />} />
+          {/* Mẫu chuẩn hợp nhất: Kiểm chứng trực tiếp & Giải thích XAI */}
+          <Route path="checker" element={<KiemChungTrucTiepPage />} />
+          <Route path="analysis/multimodal" element={<KiemChungTrucTiepPage />} />
+          
           <Route path="analysis/text" element={<TextAnalysisPage />} />
           <Route path="analysis/image" element={<ImageAnalysisPage />} />
           <Route path="analysis/video" element={<VideoAnalysisPage />} />
