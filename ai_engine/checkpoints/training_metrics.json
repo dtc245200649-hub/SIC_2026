@@ -1,0 +1,80 @@
+{
+  "model_name": "vinai/phobert-base-v2",
+  "best_dev_f1": 0.3221,
+  "final_dev_acc": 0.3667,
+  "epochs_trained": 2,
+  "total_time_sec": 316.6,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.1713,
+      "train_accuracy": 0.3667,
+      "train_f1": 0.3671,
+      "dev_loss": 1.1075,
+      "dev_accuracy": 0.4,
+      "dev_f1": 0.3221,
+      "duration_sec": 160.8
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0644,
+      "train_accuracy": 0.43,
+      "train_f1": 0.4245,
+      "dev_loss": 1.1291,
+      "dev_accuracy": 0.3667,
+      "dev_f1": 0.2887,
+      "duration_sec": 146.0
+    }
+  ],
+  "classification_report": {
+    "Chính xác (True)": {
+      "precision": 0.6,
+      "recall": 0.3,
+      "f1-score": 0.4,
+      "support": 30.0
+    },
+    "Sai sự thật (Fake)": {
+      "precision": 0.3287671232876712,
+      "recall": 0.8,
+      "f1-score": 0.46601941747572817,
+      "support": 30.0
+    },
+    "Gây hiểu lầm (Misleading)": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 30.0
+    },
+    "accuracy": 0.36666666666666664,
+    "macro avg": {
+      "precision": 0.3095890410958904,
+      "recall": 0.3666666666666667,
+      "f1-score": 0.28867313915857606,
+      "support": 90.0
+    },
+    "weighted avg": {
+      "precision": 0.3095890410958904,
+      "recall": 0.36666666666666664,
+      "f1-score": 0.28867313915857606,
+      "support": 90.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      9,
+      20,
+      1
+    ],
+    [
+      5,
+      24,
+      1
+    ],
+    [
+      1,
+      29,
+      0
+    ]
+  ],
+  "timestamp": "2026-11-24 04:42:01"
+}

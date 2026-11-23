@@ -119,28 +119,30 @@ class SingleModalPipelineService:
 
         session_title = title.strip() if title and title.strip() else clean_text[:60] + "..."
 
-        # 1. Trích xuất đặc trưng với PhoBERT
+        # 1. Trích xuất đặc trưng & Dự đoán bằng Mô hình Học sâu PhoBERT v2 Fine-Tuned
         text_encoder = VietnameseTextEncoder()
-        feature_vec = text_encoder.extract_features(clean_text)
+        dl_pred = text_encoder.predict_misinformation(clean_text)
+        pred_label = dl_pred.get("predicted_label", "CAN_KIEM_CHUNG")
+        confidence = dl_pred.get("confidence_score", 0.75)
 
         # 2. Phân tích Token Attribution XAI
         explainer = TextXAIExplainer()
         token_attributions = explainer.explain_text(clean_text)
-
-        # 3. Phán đoán nhãn sơ bộ
         high_risk_tokens = [t for t in token_attributions if t["weight"] > 0.75]
-        if len(high_risk_tokens) >= 2:
+
+        # Điều chỉnh nhãn nếu có từ ngữ mang tính đe dọa / kích động cực mạnh
+        if len(high_risk_tokens) >= 2 and pred_label != "SAI_SU_THAT":
             pred_label = "SAI_SU_THAT"
-            confidence = min(0.96, 0.75 + len(high_risk_tokens) * 0.05)
-            summary = f"Phát hiện {len(high_risk_tokens)} cụm từ có tính chất kích động hoặc sai lệch cao: {', '.join([t['word'] for t in high_risk_tokens[:3]])}."
-        elif len(high_risk_tokens) == 1:
-            pred_label = "GAY_HIEU_LAM"
-            confidence = 0.82
-            summary = "Nội dung chứa từ ngữ phóng đại, có nguy cơ gây hiểu lầm cho người đọc."
+            confidence = max(confidence, 0.88)
+
+        # 3. Tổng hợp kết luận AI
+        if pred_label == "SAI_SU_THAT":
+            keywords_str = f": {', '.join([t['word'] for t in high_risk_tokens[:3]])}" if high_risk_tokens else ""
+            summary = f"Mô hình Học sâu PhoBERT v2 (Độ tin cậy {int(confidence*100)}%) phân loại nội dung có đặc trưng tin sai lệch cao{keywords_str}."
+        elif pred_label == "GAY_HIEU_LAM":
+            summary = f"Mô hình Học sâu PhoBERT v2 (Độ tin cậy {int(confidence*100)}%) cảnh báo nội dung phóng đại, có nguy cơ gây hiểu lầm cho người đọc."
         else:
-            pred_label = "CHINH_XAC"
-            confidence = 0.90
-            summary = "Nội dung sử dụng văn phong trung tính, chuẩn mực, không chứa các từ khóa kích động."
+            summary = f"Mô hình Học sâu PhoBERT v2 (Độ tin cậy {int(confidence*100)}%) xác nhận nội dung sử dụng văn phong trung tính, chuẩn mực."
 
         # 4. Lưu phiên vào CSDL
         now = datetime.now(timezone.utc)

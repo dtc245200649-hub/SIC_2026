@@ -92,8 +92,11 @@ backend/uploads/*
 *.bin
 *.onnx
 *.safetensors
+data/huggingface/
+data/torch/
 ai_engine/checkpoints/*
 !ai_engine/checkpoints/.gitkeep
+!ai_engine/checkpoints/training_metrics.json
 
 # ==========================================
 # OS Specific

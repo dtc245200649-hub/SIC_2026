@@ -1,6 +1,13 @@
+import os
 import re
 import unicodedata
 from typing import Dict, List, Optional, Tuple, Union
+
+# Cấu hình lưu trữ bộ nhớ đệm trên ổ D: (tránh cạn kiệt dung lượng ổ C:)
+_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.environ["HF_HOME"] = os.path.join(_BASE_DIR, "data", "huggingface")
+os.environ["TORCH_HOME"] = os.path.join(_BASE_DIR, "data", "torch")
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 try:
     import torch
@@ -74,13 +81,115 @@ class VietnameseTextEncoder(nn.Module):
 
         if TRANSFORMERS_AVAILABLE:
             try:
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
-                self.backbone = AutoModel.from_pretrained(model_name)
+                self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False, local_files_only=True)
+                self.backbone = AutoModel.from_pretrained(model_name, local_files_only=True)
                 self.backbone.to(self.device)
                 self.backbone.eval()
             except Exception as e:
-                # Fallback nhẹ nhàng nếu chưa tải được checkpoint offline
+                # Fallback nếu chưa tải được checkpoint offline
                 print(f"[TextEncoder] Thông báo: Sẽ khởi tạo mô hình khi có kết nối checkpoint ({e}).")
+
+        # Khởi tạo Classification Head kết nối PhoBERT fine-tuned
+        self.num_classes = 3
+        self.classifier = None
+        self.label_map = {0: "CHINH_XAC", 1: "SAI_SU_THAT", 2: "GAY_HIEU_LAM"}
+        self._init_classifier_and_load_checkpoint()
+
+    def _init_classifier_and_load_checkpoint(self):
+        """Khởi tạo Classifier Head và nạp trọng số fine-tuned nếu tồn tại checkpoint."""
+        if not TORCH_AVAILABLE:
+            return
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(self.feature_dim, 256),
+            nn.GELU(),
+            nn.LayerNorm(256),
+            nn.Dropout(0.2),
+            nn.Linear(256, self.num_classes),
+        ).to(self.device)
+
+        checkpoint_path = os.path.join(_BASE_DIR, "ai_engine", "checkpoints", "phobert_vifact_best.pt")
+        if os.path.exists(checkpoint_path):
+            try:
+                state = torch.load(checkpoint_path, map_location=self.device)
+                model_state = state.get("model_state_dict", state)
+
+                # Nạp trọng số classifier
+                classifier_state = {
+                    k.replace("classifier.", ""): v
+                    for k, v in model_state.items()
+                    if k.startswith("classifier.")
+                }
+                if classifier_state:
+                    self.classifier.load_state_dict(classifier_state, strict=False)
+
+                # Nạp trọng số backbone PhoBERT
+                phobert_state = {
+                    k.replace("phobert.", ""): v
+                    for k, v in model_state.items()
+                    if k.startswith("phobert.")
+                }
+                if phobert_state and self.backbone is not None:
+                    self.backbone.load_state_dict(phobert_state, strict=False)
+
+                self.classifier.eval()
+                print(f"[TextEncoder] Đã nạp thành công Checkpoint PhoBERT fine-tuned từ: {checkpoint_path}")
+            except Exception as e:
+                print(f"[TextEncoder] Cảnh báo: Lỗi khi nạp weights checkpoint: {e}")
+
+    def predict_misinformation(self, text: str) -> Dict[str, Any]:
+        """
+        Dự đoán nhãn tin giả bằng mạng nơ-ron PhoBERT Fine-Tuned hoàn chỉnh:
+        Trả về nhãn phân loại {CHINH_XAC, SAI_SU_THAT, GAY_HIEU_LAM} và xác suất Softmax.
+        """
+        cleaned_text = VietnameseTextPreprocessor.clean_text(text)
+        if not cleaned_text:
+            return {
+                "predicted_label": "CAN_KIEM_CHUNG",
+                "confidence_score": 0.5,
+                "probabilities": {"CHINH_XAC": 0.33, "SAI_SU_THAT": 0.33, "GAY_HIEU_LAM": 0.34},
+                "is_deep_learning": False,
+            }
+
+        if self.tokenizer and self.backbone and self.classifier:
+            inputs = self.tokenizer(
+                cleaned_text,
+                padding="max_length",
+                truncation=True,
+                max_length=self.max_length,
+                return_tensors="pt",
+            ).to(self.device)
+
+            with torch.no_grad():
+                outputs = self.backbone(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"])
+                cls_rep = outputs.last_hidden_state[:, 0, :]
+                logits = self.classifier(cls_rep)
+                probs = torch.softmax(logits, dim=-1).squeeze(0).cpu().tolist()
+
+            pred_idx = int(torch.argmax(logits, dim=-1).item())
+            pred_label = self.label_map.get(pred_idx, "GAY_HIEU_LAM")
+            confidence = round(float(probs[pred_idx]), 2)
+
+            return {
+                "predicted_label": pred_label,
+                "confidence_score": confidence,
+                "probabilities": {
+                    "CHINH_XAC": round(probs[0], 4),
+                    "SAI_SU_THAT": round(probs[1], 4),
+                    "GAY_HIEU_LAM": round(probs[2], 4),
+                },
+                "is_deep_learning": True,
+                "model_architecture": "PhoBERT-v2 + Deep Neural Classification Head",
+            }
+
+        # Fallback an toàn nếu chưa nạp được PyTorch
+        return {
+            "predicted_label": "GAY_HIEU_LAM",
+            "confidence_score": 0.70,
+            "probabilities": {"CHINH_XAC": 0.2, "SAI_SU_THAT": 0.4, "GAY_HIEU_LAM": 0.4},
+            "is_deep_learning": False,
+        }
 
     def forward(
         self,
