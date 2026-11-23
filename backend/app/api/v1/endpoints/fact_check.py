@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.models.evidence import EvidenceDocument, EvidenceSource
 from app.services.rss_collector import RssCollectorService
+from app.services.rag_service import VectorRAGService
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from app.schemas.fact_check import (
@@ -123,70 +124,34 @@ def create_evidence(
     db.add(new_doc)
     db.commit()
     db.refresh(new_doc)
+    # Tự động nạp tài liệu mới vào Vector RAG Index
+    try:
+        VectorRAGService.build_index(db=db, force_rebuild=True)
+    except Exception:
+        pass
     return EvidenceDocumentOut.model_validate(new_doc)
+
+
+@router.post(
+    "/build-index",
+    summary="Nạp toàn bộ tài liệu kiểm chứng vào Vector RAG Index",
+    description="Tính toán vector đặc trưng ngữ nghĩa cho toàn bộ bài báo trong CSDL và cập nhật embedding_id.",
+)
+def build_rag_index(
+    db: Session = Depends(get_db),
+):
+    result = VectorRAGService.build_index(db=db, force_rebuild=True)
+    return result
 
 
 @router.post(
     "/verify",
     response_model=ClaimVerifyResponse,
-    summary="Đối soát phát biểu cần kiểm chứng với kho bài báo chính thống",
-    description="So khớp nội dung phát biểu với các bài báo trong CSDL để đưa ra bằng chứng ủng hộ hoặc bác bỏ.",
+    summary="Đối soát phát biểu cần kiểm chứng bằng Vector RAG Semantic Search",
+    description="Sử dụng không gian vector ngữ nghĩa để truy vấn và đối soát bằng chứng trong kho tri thức.",
 )
 def verify_claim(
     payload: ClaimVerifyRequest,
     db: Session = Depends(get_db),
 ):
-    claim_text = payload.claim.strip().lower()
-    claim_words = set(re.findall(r"\w+", claim_text)) if 're' in globals() else set(claim_text.split())
-
-    # Lấy các bài báo có từ khóa liên quan
-    stmt = select(EvidenceDocument).join(EvidenceDocument.source).order_by(desc(EvidenceDocument.published_date)).limit(50)
-    all_docs = db.scalars(stmt).all()
-
-    matched_items: List[VerifiedEvidenceItem] = []
-
-    for doc in all_docs:
-        doc_words = set(doc.title.lower().split() + doc.snippet.lower().split())
-        intersection = claim_words.intersection(doc_words)
-
-        if intersection:
-            score = len(intersection) / max(1, len(claim_words))
-            # Quyết định NLI sơ bộ
-            # Nếu bài báo chứa từ "bác bỏ", "sai sự thật", "cảnh báo", "không đúng"
-            lower_text = (doc.title + " " + doc.snippet).lower()
-            if any(k in lower_text for k in ["bác bỏ", "sai sự thật", "cảnh báo", "giả mạo", "xử phạt"]):
-                verdict = "REFUTES"
-            elif score > 0.4:
-                verdict = "SUPPORTS"
-            else:
-                verdict = "NOT_ENOUGH_INFO"
-
-            matched_items.append(
-                VerifiedEvidenceItem(
-                    id=doc.id,
-                    title=doc.title,
-                    url=doc.url,
-                    snippet=doc.snippet,
-                    source_name=doc.source.name,
-                    source_domain=doc.source.domain,
-                    published_date=doc.published_date.strftime("%d/%m/%Y") if doc.published_date else None,
-                    similarity_score=min(1.0, score + 0.3),
-                    nli_verdict=verdict,
-                )
-            )
-
-    matched_items.sort(key=lambda x: x.similarity_score, reverse=True)
-    top_matches = matched_items[:5]
-
-    overall = "NOT_ENOUGH_INFO"
-    if top_matches:
-        if any(m.nli_verdict == "REFUTES" for m in top_matches):
-            overall = "REFUTES"
-        elif any(m.nli_verdict == "SUPPORTS" for m in top_matches):
-            overall = "SUPPORTS"
-
-    return ClaimVerifyResponse(
-        claim=payload.claim,
-        overall_verdict=overall,
-        matched_evidences=top_matches,
-    )
+    return VectorRAGService.verify_claim(claim=payload.claim, db=db)

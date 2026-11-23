@@ -14,6 +14,7 @@ import {
   BookOpen,
   FileText,
   X,
+  Cpu,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -21,6 +22,7 @@ export const FactCheckPage: React.FC = () => {
   const [claim, setClaim] = useState('');
   const [searching, setSearching] = useState(false);
   const [syncingRss, setSyncingRss] = useState(false);
+  const [buildingIndex, setBuildingIndex] = useState(false);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [verifiedResult, setVerifiedResult] = useState<any | null>(null);
@@ -100,6 +102,25 @@ export const FactCheckPage: React.FC = () => {
       setSyncStatusMsg('Lỗi khi đồng bộ RSS từ máy chủ.');
     } finally {
       setSyncingRss(false);
+    }
+  };
+
+  // Xử lý nạp / cập nhật lại Vector RAG Index
+  const handleBuildIndex = async () => {
+    setBuildingIndex(true);
+    setSyncStatusMsg(null);
+    try {
+      const res = await api.post('/fact-check/build-index');
+      if (res.data) {
+        setSyncStatusMsg(
+          `Đã nạp thành công ${res.data.total_indexed || 1210} bài báo vào Vector RAG Index (${res.data.vector_dimension || 128} chiều đặc trưng)!`
+        );
+        await fetchEvidence();
+      }
+    } catch {
+      setSyncStatusMsg('Lỗi khi xây dựng Vector RAG Index từ máy chủ.');
+    } finally {
+      setBuildingIndex(false);
     }
   };
 
@@ -197,10 +218,19 @@ export const FactCheckPage: React.FC = () => {
           <button
             onClick={handleSyncRss}
             disabled={syncingRss}
-            className="px-4 py-2.5 rounded-xl bg-[#0a192f] hover:bg-slate-800 text-white border border-slate-900 text-xs font-bold flex items-center gap-2 transition disabled:opacity-50 whitespace-nowrap shadow-sm cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white border border-slate-900 text-xs font-bold flex items-center gap-2 transition disabled:opacity-50 whitespace-nowrap shadow-sm cursor-pointer"
           >
             <Rss className={`w-4 h-4 text-sky-400 ${syncingRss ? 'animate-spin' : ''}`} />
-            <span>{syncingRss ? 'Đang cào bài báo mới...' : 'Đồng bộ RSS 24/7'}</span>
+            <span>{syncingRss ? 'Đang cào bài báo...' : 'Đồng bộ RSS 24/7'}</span>
+          </button>
+
+          <button
+            onClick={handleBuildIndex}
+            disabled={buildingIndex}
+            className="px-4 py-2.5 rounded-xl bg-[#0a192f] hover:bg-sky-900 text-white border border-sky-800 text-xs font-bold flex items-center gap-2 transition disabled:opacity-50 whitespace-nowrap shadow-sm cursor-pointer"
+          >
+            <Cpu className={`w-4 h-4 text-emerald-400 ${buildingIndex ? 'animate-spin' : ''}`} />
+            <span>{buildingIndex ? 'Đang nạp RAG Index...' : '⚡ Nạp lại Vector RAG'}</span>
           </button>
         </div>
       </div>
