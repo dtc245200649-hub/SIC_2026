@@ -118,9 +118,9 @@ class RAGAutoScheduler:
                 rag_details = None
                 if new_added > 0:
                     logger.info(
-                        f"[RAGScheduler] Tìm thấy {new_added} bài báo mới! Tự động tái tạo Vector RAG Index..."
+                        f"[RAGScheduler] Tìm thấy {new_added} bài báo mới! Tự động nạp tích lũy vào Vector RAG Index (không xóa bài cũ)..."
                     )
-                    rag_details = VectorRAGService.build_index(db=db, force_rebuild=True)
+                    rag_details = VectorRAGService.append_new_documents(db=db)
                     rag_rebuilt = True
                 else:
                     logger.info(
