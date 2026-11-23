@@ -11,8 +11,9 @@
 Hệ thống là một nền tảng nghiên cứu kết hợp sản phẩm thực nghiệm hoàn chỉnh, có khả năng:
 - **Xử lý Đa phương thức:** Tiếp nhận đồng thời Văn bản (Text), Hình ảnh (Image), Video (Keyframes), và Âm thanh (Audio).
 - **Học sâu & Dung hợp (Multimodal Fusion):** PhoBERT (Text), Vision Transformer ViT (Image/Video), Whisper (Audio STT), kết hợp qua cơ chế Cross-modal Attention và Reliability-aware Gated Fusion.
-- **Explainable AI (XAI):** Minh bạch hóa lý do dự đoán của mô hình qua Word Attribution (SHAP), Visual Heatmap (Grad-CAM), và tỷ trọng đóng góp của từng phương thức.
-- **Đánh giá Tác động Xã hội & Lan truyền (GNN):** Xây dựng đồ thị lan truyền và phân tích tác động, tốc độ lây lan và các nút khuếch đại bằng Graph Neural Networks (PyG / Rumor Cascade Modeling).
+- **Explainable AI (XAI):** Minh bạch hóa lý do dự đoán của mô hình qua Word Attribution, Visual Heatmap (Grad-CAM), và tỷ trọng đóng góp của từng phương thức.
+- **Kiểm chứng thông tin (Fact-Checking):** Truy xuất bằng chứng từ kho tri thức báo chí chính thống (VnExpress, Tuổi Trẻ, Thanh Niên) qua RSS Feeds 24/7 và đối soát phát biểu qua Natural Language Inference (NLI).
+- **Phân tích mạng xã hội (GNN):** Xây dựng đồ thị lan truyền và phân tích tác động, tốc độ lan truyền bằng Graph Neural Networks (PyG).
 
 ---
 
@@ -33,11 +34,10 @@ DUANNHOM/
 - [x] **Giai đoạn 1: Khởi tạo** (Thiết kế kiến trúc, cấu trúc thư mục, môi trường Git)
 - [x] **Giai đoạn 2: Backend & Database** (17 Models SQLAlchemy, Auth JWT, Khóa tài khoản > 5 lần, Seed dữ liệu)
 - [x] **Giai đoạn 3: Frontend** (React + Vite + Tailwind, 12 trang chức năng phân tích & đối soát)
-- [x] **Tích hợp RSS Báo chí Chính thống** (VnExpress, Tuổi Trẻ, Thanh Niên tự động nạp bài báo thật)
-- [ ] **Giai đoạn 4: AI Cơ bản** (PhoBERT, ViT, Keyframe Extraction, Whisper STT)
-- [ ] **Giai đoạn 5: AI Đa phương thức** (Cross-Modal Attention, Reliability-aware Fusion)
-- [ ] **Giai đoạn 6: XAI & Fact-Checking NLI** (Giải thích mô hình, Đối soát NLI)
-- [ ] **Giai đoạn 7: GNN & Lan truyền xã hội** (Cây lan truyền, GraphSAGE/GAT)
+- [x] **Giai đoạn 4: AI Cơ bản** (PhoBERT v2 fine-tuned 1.6GB Checkpoint, ViT Patch Embedding, Keyframe Extraction, Whisper STT)
+- [x] **Giai đoạn 5: AI Đa phương thức** (Cross-Modal Co-Attention, Reliability-aware Gated Fusion, Cross-Modal Inconsistency Detection)
+- [x] **Giai đoạn 6: XAI Giải thích mô hình** (Token Attribution SHAP, Grad-CAM Heatmap $14\times14$ patches, Stacked Modality Contribution)
+- [x] **Giai đoạn 7: GNN & Lan truyền xã hội** (Cây lan truyền, GraphSAGE/GAT, Epidemic Cascade R0 tích hợp liền mạch)
 - [ ] **Giai đoạn 8: Hoàn thiện & Docker** (Đóng gói Docker Compose, Test E2E)
 
 ---

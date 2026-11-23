@@ -238,13 +238,12 @@ class SingleModalPipelineService:
                 detail=f"Dung lượng tệp vượt quá giới hạn cho phép ({settings.MAX_UPLOAD_SIZE_MB}MB).",
             )
 
-        # Trích xuất đặc trưng ViT
+        # Trích xuất đặc trưng và dự đoán giả mạo qua Vision Transformer (ViT)
         image_encoder = VisionTransformerEncoder()
-        pooled_feat = image_encoder.extract_pooled_features(None)
-
-        pred_label = "GAY_HIEU_LAM"
-        confidence = 0.86
-        summary = "Phát hiện dấu hiệu can thiệp thị giác (image splicing) và độ phân giải không đồng nhất giữa các vùng ảnh."
+        vit_result = image_encoder.predict_image_manipulation(saved_path)
+        pred_label = vit_result.get("predicted_label", "GAY_HIEU_LAM")
+        confidence = vit_result.get("confidence_score", 0.85)
+        summary = vit_result.get("summary", "Phát hiện dấu hiệu can thiệp thị giác (image splicing) qua bản đồ chú ý ViT.")
 
         now = datetime.now(timezone.utc)
         session = AnalysisSession(
