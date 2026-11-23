@@ -1,0 +1,23 @@
+# Bỏ qua thư mục node_modules và venv khi build Docker
+node_modules
+*/node_modules
+frontend/node_modules
+.venv
+*/.venv
+__pycache__
+*/__pycache__
+*.pyc
+
+# Bỏ qua Git và cache
+.git
+.gitignore
+.pytest_cache
+.vscode
+.idea
+
+# Bỏ qua dữ liệu lớn (đã mount qua volume)
+data/huggingface
+data/torch
+dataset
+uploads
+misinfo_dev.db
