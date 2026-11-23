@@ -1,7 +1,7 @@
 # BÁO CÁO THỐNG KÊ BỘ DỮ LIỆU NGHIÊN CỨU
 
 **Tên đề tài:** Học sâu đa phương thức có khả năng giải thích trong phát hiện thông tin sai lệch và phân tích tác động xã hội trên mạng xã hội Việt Nam  
-**Ngày cập nhật:** 22/11/2026 03:54:13  
+**Ngày cập nhật:** 22/11/2026 04:00:05  
 **Mục tiêu quy mô giai đoạn 1:** 2.000 mẫu (Facebook: 1.000, TikTok: 1.000)  
 
 ---
