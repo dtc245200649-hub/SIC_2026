@@ -33,8 +33,18 @@ export const FactCheckPage: React.FC = () => {
   const [formSnippet, setFormSnippet] = useState('');
   const [formSource, setFormSource] = useState('Báo Tuổi Trẻ');
   const [formPlatform, setFormPlatform] = useState('Facebook (Công khai)');
-  const [formTopic, setFormTopic] = useState('Thiên tai & Bão lũ');
+  const [formTopic, setFormTopic] = useState('Y tế & Sức khỏe');
   const [formVerdict, setFormVerdict] = useState<'REFUTES' | 'SUPPORTS'>('REFUTES');
+  const [selectedTopic, setSelectedTopic] = useState<'ALL' | 'HEALTH' | 'DISASTER' | 'ECONOMY' | 'EDUCATION' | 'LAW'>('ALL');
+
+  const getItemTopic = (item: any): 'HEALTH' | 'DISASTER' | 'ECONOMY' | 'EDUCATION' | 'LAW' => {
+    const text = (item.source + ' ' + item.domain + ' ' + item.title).toLowerCase();
+    if (text.includes('sức khỏe') || text.includes('y tế') || text.includes('suc-khoe') || text.includes('bệnh')) return 'HEALTH';
+    if (text.includes('khoa học') || text.includes('khoa-hoc') || text.includes('thiên tai') || text.includes('thời tiết') || text.includes('mưa lũ') || text.includes('đê')) return 'DISASTER';
+    if (text.includes('kinh doanh') || text.includes('kinh-doanh') || text.includes('kinh tế') || text.includes('kinh-te') || text.includes('tài chính') || text.includes('ngân hàng')) return 'ECONOMY';
+    if (text.includes('giáo dục') || text.includes('giao-duc') || text.includes('thi cử') || text.includes('tuyển sinh') || text.includes('học')) return 'EDUCATION';
+    return 'LAW';
+  };
 
   // Tải danh sách bài báo từ CSDL
   const fetchEvidence = async (query?: string) => {
@@ -80,8 +90,9 @@ export const FactCheckPage: React.FC = () => {
         params: { max_items: 8 },
       });
       if (res.data) {
+        const totalAdded = res.data.total_new_documents ?? (res.data.items_added || 8);
         setSyncStatusMsg(
-          `Đã cào & đồng bộ thành công ${res.data.items_added || 8} bài báo chính thống mới từ VnExpress, Tuổi Trẻ, Thanh Niên!`
+          `Đã cào & đồng bộ thành công ${totalAdded} bài báo chính thống mới từ 17 luồng RSS thuộc cả 5 chủ đề: Y tế, Thiên tai, Kinh tế, Giáo dục, Pháp luật!`
         );
         await fetchEvidence();
       }
@@ -250,10 +261,11 @@ export const FactCheckPage: React.FC = () => {
                   onChange={(e) => setFormTopic(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-900 font-semibold text-xs focus:outline-none focus:border-sky-600"
                 >
-                  <option value="Thiên tai & Bão lũ">Thiên tai & Bão lũ</option>
                   <option value="Y tế & Sức khỏe">Y tế & Sức khỏe</option>
-                  <option value="Lừa đảo & Tài chính">Lừa đảo & Tài chính</option>
-                  <option value="Trật tự xã hội">Trật tự xã hội</option>
+                  <option value="Thiên tai & Thời tiết">Thiên tai & Thời tiết</option>
+                  <option value="Kinh tế & Tài chính">Kinh tế & Tài chính</option>
+                  <option value="Giáo dục & Thi cử">Giáo dục & Thi cử</option>
+                  <option value="Pháp luật & Xử lý tin giả">Pháp luật & Xử lý tin giả</option>
                 </select>
               </div>
 
@@ -422,15 +434,88 @@ export const FactCheckPage: React.FC = () => {
 
       {/* Evidence Results */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-black text-slate-950 uppercase tracking-wide">
             Kho Tri Thức Báo Chí Chính Thống ({evidenceList.length} bài viết đã lưu vết)
           </h3>
-          <span className="text-xs text-slate-600 font-bold">Nguồn: VnExpress, Tuổi Trẻ, Thanh Niên</span>
+          <span className="text-xs text-slate-600 font-bold">17 luồng RSS • Bao phủ 5 chủ đề cốt lõi</span>
+        </div>
+
+        {/* 5 Topic Filter Buttons */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('ALL')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'ALL'
+                ? 'bg-[#0a192f] text-white border-slate-900 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-300'
+            }`}
+          >
+            Tất cả ({evidenceList.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('HEALTH')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'HEALTH'
+                ? 'bg-rose-700 text-white border-rose-800 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-rose-50 border-slate-300'
+            }`}
+          >
+            🏥 Y tế & Sức khỏe ({evidenceList.filter((i) => getItemTopic(i) === 'HEALTH').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('DISASTER')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'DISASTER'
+                ? 'bg-amber-700 text-white border-amber-800 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-amber-50 border-slate-300'
+            }`}
+          >
+            🌪️ Thiên tai & Thời tiết ({evidenceList.filter((i) => getItemTopic(i) === 'DISASTER').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('ECONOMY')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'ECONOMY'
+                ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-emerald-50 border-slate-300'
+            }`}
+          >
+            📈 Kinh tế & Tài chính ({evidenceList.filter((i) => getItemTopic(i) === 'ECONOMY').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('EDUCATION')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'EDUCATION'
+                ? 'bg-indigo-700 text-white border-indigo-800 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-indigo-50 border-slate-300'
+            }`}
+          >
+            🎓 Giáo dục & Thi cử ({evidenceList.filter((i) => getItemTopic(i) === 'EDUCATION').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTopic('LAW')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
+              selectedTopic === 'LAW'
+                ? 'bg-sky-700 text-white border-sky-800 shadow-xs'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border-slate-300'
+            }`}
+          >
+            ⚖️ Pháp luật & Xử lý tin giả ({evidenceList.filter((i) => getItemTopic(i) === 'LAW').length})
+          </button>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          {evidenceList.map((item) => (
+          {(selectedTopic === 'ALL'
+            ? evidenceList
+            : evidenceList.filter((item) => getItemTopic(item) === selectedTopic)
+          ).map((item) => (
             <div
               key={item.id}
               className="bg-white p-5 rounded-2xl border-2 border-slate-300 hover:border-slate-400 shadow-xs transition space-y-3"

@@ -14,21 +14,57 @@ from app.models.evidence import EvidenceDocument, EvidenceSource
 
 logger = logging.getLogger(__name__)
 
-# Danh sách các luồng RSS báo chí chính thống uy tín nhất Việt Nam
+# Danh sách các luồng RSS báo chí chính thống uy tín nhất Việt Nam theo 5 chủ đề nóng
 OFFICIAL_RSS_FEEDS = [
+    # =========================================================================
+    # 1. Y TẾ & SỨC KHỎE (Health & Medicine)
+    # =========================================================================
+    {
+        "name": "Báo Sức khỏe & Đời sống - Bộ Y tế",
+        "domain": "suckhoedoisong.vn/thoi-su-y-te",
+        "url": "https://suckhoedoisong.vn",
+        "feed_url": "https://suckhoedoisong.vn/rss/thoi-su-y-te.rss",
+        "category": "Y tế & Sức khỏe",
+        "reliability_score": 0.99,
+        "is_official": True,
+    },
+    {
+        "name": "Báo VnExpress - Sức khỏe",
+        "domain": "vnexpress.net/suc-khoe",
+        "url": "https://vnexpress.net/suc-khoe",
+        "feed_url": "https://vnexpress.net/rss/suc-khoe.rss",
+        "category": "Y tế & Sức khỏe",
+        "reliability_score": 0.98,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Tuổi Trẻ - Sức khỏe",
+        "domain": "tuoitre.vn/suc-khoe",
+        "url": "https://tuoitre.vn/suc-khoe.htm",
+        "feed_url": "https://tuoitre.vn/rss/suc-khoe.rss",
+        "category": "Y tế & Sức khỏe",
+        "reliability_score": 0.97,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Thanh Niên - Sức khỏe",
+        "domain": "thanhnien.vn/suc-khoe",
+        "url": "https://thanhnien.vn/suc-khoe.html",
+        "feed_url": "https://thanhnien.vn/rss/suc-khoe.rss",
+        "category": "Y tế & Sức khỏe",
+        "reliability_score": 0.96,
+        "is_official": True,
+    },
+
+    # =========================================================================
+    # 2. THIÊN TAI, THỜI TIẾT & MÔI TRƯỜNG (Natural Disasters & Weather)
+    # =========================================================================
     {
         "name": "Báo VnExpress - Thời sự",
         "domain": "vnexpress.net",
         "url": "https://vnexpress.net",
         "feed_url": "https://vnexpress.net/rss/thoi-su.rss",
-        "reliability_score": 0.98,
-        "is_official": True,
-    },
-    {
-        "name": "Báo VnExpress - Pháp luật",
-        "domain": "vnexpress.net/phap-luat",
-        "url": "https://vnexpress.net/phap-luat",
-        "feed_url": "https://vnexpress.net/rss/phap-luat.rss",
+        "category": "Thiên tai & Thời tiết",
         "reliability_score": 0.98,
         "is_official": True,
     },
@@ -37,7 +73,101 @@ OFFICIAL_RSS_FEEDS = [
         "domain": "tuoitre.vn",
         "url": "https://tuoitre.vn",
         "feed_url": "https://tuoitre.vn/rss/thoi-su.rss",
+        "category": "Thiên tai & Thời tiết",
         "reliability_score": 0.97,
+        "is_official": True,
+    },
+    {
+        "name": "Báo VnExpress - Khoa học & Môi trường",
+        "domain": "vnexpress.net/khoa-hoc",
+        "url": "https://vnexpress.net/khoa-hoc",
+        "feed_url": "https://vnexpress.net/rss/khoa-hoc.rss",
+        "category": "Thiên tai & Thời tiết",
+        "reliability_score": 0.98,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Tuổi Trẻ - Khoa học",
+        "domain": "tuoitre.vn/khoa-hoc",
+        "url": "https://tuoitre.vn/khoa-hoc.htm",
+        "feed_url": "https://tuoitre.vn/rss/khoa-hoc.rss",
+        "category": "Thiên tai & Thời tiết",
+        "reliability_score": 0.97,
+        "is_official": True,
+    },
+
+    # =========================================================================
+    # 3. KINH TẾ & TÀI CHÍNH (Economy & Finance)
+    # =========================================================================
+    {
+        "name": "Báo VnExpress - Kinh doanh",
+        "domain": "vnexpress.net/kinh-doanh",
+        "url": "https://vnexpress.net/kinh-doanh",
+        "feed_url": "https://vnexpress.net/rss/kinh-doanh.rss",
+        "category": "Kinh tế & Tài chính",
+        "reliability_score": 0.98,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Tuổi Trẻ - Kinh doanh",
+        "domain": "tuoitre.vn/kinh-doanh",
+        "url": "https://tuoitre.vn/kinh-doanh.htm",
+        "feed_url": "https://tuoitre.vn/rss/kinh-doanh.rss",
+        "category": "Kinh tế & Tài chính",
+        "reliability_score": 0.97,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Thanh Niên - Kinh tế",
+        "domain": "thanhnien.vn/kinh-te",
+        "url": "https://thanhnien.vn/kinh-te.html",
+        "feed_url": "https://thanhnien.vn/rss/kinh-te.rss",
+        "category": "Kinh tế & Tài chính",
+        "reliability_score": 0.96,
+        "is_official": True,
+    },
+
+    # =========================================================================
+    # 4. GIÁO DỤC & THI CỬ (Education)
+    # =========================================================================
+    {
+        "name": "Báo VnExpress - Giáo dục",
+        "domain": "vnexpress.net/giao-duc",
+        "url": "https://vnexpress.net/giao-duc",
+        "feed_url": "https://vnexpress.net/rss/giao-duc.rss",
+        "category": "Giáo dục & Thi cử",
+        "reliability_score": 0.98,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Tuổi Trẻ - Giáo dục",
+        "domain": "tuoitre.vn/giao-duc",
+        "url": "https://tuoitre.vn/giao-duc.htm",
+        "feed_url": "https://tuoitre.vn/rss/giao-duc.rss",
+        "category": "Giáo dục & Thi cử",
+        "reliability_score": 0.97,
+        "is_official": True,
+    },
+    {
+        "name": "Báo Thanh Niên - Giáo dục",
+        "domain": "thanhnien.vn/giao-duc",
+        "url": "https://thanhnien.vn/giao-duc.html",
+        "feed_url": "https://thanhnien.vn/rss/giao-duc.rss",
+        "category": "Giáo dục & Thi cử",
+        "reliability_score": 0.96,
+        "is_official": True,
+    },
+
+    # =========================================================================
+    # 5. PHÁP LUẬT, AN NINH MẠNG & XỬ LÝ TIN GIẢ (Law & VAFC Fact-Checking)
+    # =========================================================================
+    {
+        "name": "Báo VnExpress - Pháp luật",
+        "domain": "vnexpress.net/phap-luat",
+        "url": "https://vnexpress.net/phap-luat",
+        "feed_url": "https://vnexpress.net/rss/phap-luat.rss",
+        "category": "Pháp luật & Xử lý tin giả",
+        "reliability_score": 0.98,
         "is_official": True,
     },
     {
@@ -45,6 +175,7 @@ OFFICIAL_RSS_FEEDS = [
         "domain": "tuoitre.vn/phap-luat",
         "url": "https://tuoitre.vn/phap-luat.htm",
         "feed_url": "https://tuoitre.vn/rss/phap-luat.rss",
+        "category": "Pháp luật & Xử lý tin giả",
         "reliability_score": 0.97,
         "is_official": True,
     },
@@ -53,6 +184,7 @@ OFFICIAL_RSS_FEEDS = [
         "domain": "thanhnien.vn",
         "url": "https://thanhnien.vn",
         "feed_url": "https://thanhnien.vn/rss/thoi-su.rss",
+        "category": "Pháp luật & Xử lý tin giả",
         "reliability_score": 0.96,
         "is_official": True,
     },
@@ -145,6 +277,10 @@ class RssCollectorService:
             source = db.scalar(
                 select(EvidenceSource).where(EvidenceSource.domain == feed_config["domain"])
             )
+            if not source:
+                source = db.scalar(
+                    select(EvidenceSource).where(EvidenceSource.name == feed_config["name"])
+                )
             if not source:
                 source = EvidenceSource(
                     name=feed_config["name"],
