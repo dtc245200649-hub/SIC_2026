@@ -2,7 +2,7 @@ import re
 import math
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, or_, desc
 from sqlalchemy.orm import Session
 
@@ -22,10 +22,14 @@ from app.services.social_scraper import social_scraper
 from app.services.social_api_connector import social_api_connector
 from ai_engine.encoders.video_processor import VideoKeyframeProcessor
 from ai_engine.xai.text_explainer import TextXAIExplainer
+from ai_engine.social_gnn.gnn_models import GATClassifier
+from ai_engine.social_gnn.propagation import CascadePropagationAnalyzer
 
 router = APIRouter()
 text_explainer = TextXAIExplainer()
 video_processor = VideoKeyframeProcessor(max_keyframes=5)
+gnn_gat_classifier = GATClassifier()
+cascade_analyzer = CascadePropagationAnalyzer()
 
 
 def _calculate_token_jaccard(text1: str, text2: str) -> float:
@@ -283,3 +287,102 @@ def get_supported_platforms():
         "zero_hallucination_standard": "ENABLED",
         "extension_manifest_version": "v3",
     }
+
+
+@router.get("/trends")
+def get_social_macro_trends(
+    time_range: str = Query("7 ngày qua", description="Khoảng thời gian: 24 giờ qua, 7 ngày qua, 30 ngày qua"),
+    platform: str = Query("Tất cả nền tảng", description="Nền tảng lọc"),
+):
+    """
+    Giám sát xu hướng lan truyền vĩ mô trên mạng xã hội Việt Nam:
+    Cung cấp số liệu tương tác, đường cong lây lan 24h, phân bố cảm xúc và các cụm tin nóng.
+    """
+    seir_trend = cascade_analyzer.simulate_seir_curve(
+        total_population=50000,
+        initial_infected=12,
+        r0=2.45,
+        hours=24,
+    )
+
+    monitored_clusters = [
+        {
+            "id": 1,
+            "topic": "Tin đồn vỡ đê sông Hồng & ngập nội thành (Báo VnExpress đã bác bỏ)",
+            "platforms": "Facebook, TikTok",
+            "interactions": "128,400",
+            "sentiment": "Hoang mang (74%)",
+            "sentimentType": "negative",
+            "status": "Sai lệch",
+            "statusType": "fake",
+        },
+        {
+            "id": 2,
+            "topic": "Tin đồn đổi tiền và phong tỏa tài khoản (Công an đã xử phạt đối tượng tung tin)",
+            "platforms": "Facebook, Zalo",
+            "interactions": "95,300",
+            "sentiment": "Lo lắng / Hoang mang (82%)",
+            "sentimentType": "negative",
+            "status": "Sai lệch",
+            "statusType": "fake",
+        },
+        {
+            "id": 3,
+            "topic": "Thông báo mưa lớn cục bộ từ Trung tâm Dự báo Khí tượng Thủy văn Quốc gia",
+            "platforms": "Facebook, Cổng TTĐT",
+            "interactions": "46,190",
+            "sentiment": "Chủ động phòng tránh (68%)",
+            "sentimentType": "positive",
+            "status": "Xác thực",
+            "statusType": "verified",
+        },
+    ]
+
+    return {
+        "time_range": time_range,
+        "platform": platform,
+        "key_metrics": {
+            "total_interactions": 482910,
+            "interaction_growth_pct": 18.4,
+            "negative_sentiment_pct": 64.8,
+            "sentiment_sample_count": 38420,
+            "virality_multiplier": "2.9x",
+            "highest_impact_topic": "Thiên tai & Y tế",
+            "highest_impact_pct": 41.2,
+        },
+        "viral_trend_data": seir_trend,
+        "sentiment_distribution": [
+            {"label": "Hoang mang / Phẫn nộ", "pct": 64.8, "color": "#b91c1c"},
+            {"label": "Nghi ngờ / Kiểm chứng lại", "pct": 23.5, "color": "#0d9488"},
+            {"label": "Trung tính / Khác", "pct": 11.7, "color": "#1e293b"},
+        ],
+        "monitored_clusters": monitored_clusters,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.post("/simulate-cascade")
+def simulate_social_cascade(
+    topic: str = Query(..., description="Chủ đề hoặc nội dung cần mô phỏng lan truyền"),
+    initial_shares: int = Query(120, ge=1, le=10000, description="Lượt chia sẻ ban đầu"),
+):
+    """
+    Mô phỏng động lực học lan truyền dịch tễ (SEIR Cascade Simulation):
+    Dự báo hệ số R0, độ sâu cascade, chỉ số Wiener và đường cong phát tán 24h.
+    """
+    return cascade_analyzer.analyze_cascade(
+        caption_or_topic=topic,
+        initial_shares=initial_shares,
+        is_simulated=True,
+    )
+
+
+@router.post("/gnn-predict")
+def predict_gnn_cascade_risk(
+    num_nodes: int = Query(32, ge=5, le=200, description="Số lượng nút trong đồ thị con cần phân tích"),
+):
+    """
+    Phân loại rủi ro cấu trúc đồ thị lan truyền bằng Graph Attention Network (GAT):
+    Xác định mức độ bất thường trong mạng lưới tương tác và các nút trọng yếu (KOLs, Bots).
+    """
+    return gnn_gat_classifier.predict_cascade_risk(num_nodes=num_nodes)

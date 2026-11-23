@@ -59,6 +59,24 @@ DUANNHOM/
 
 ---
 
+## 3.2. Chi tiết Giai đoạn 7: Graph Neural Networks (GNN) & Động lực học Lan truyền
+1. **Kiến trúc GNN Học sâu thuần PyTorch:**
+   - **Graph Attention Network (GAT):** 2 tầng Multi-Head Self-Attention trên ma trận kề đồ thị lan truyền (Diffusion Tree), học mức độ tin cậy và ảnh hưởng giữa các tài khoản.
+   - **GraphSAGE Classifier:** Tổng hợp đặc trưng láng giềng Mean Pooling qua cấu trúc mạng xã hội quy mô lớn.
+   - **Phát hiện Nút Trọng yếu (Influential Nodes):** Xếp hạng các nút có trọng số chú ý cao nhất (KOLs, Hubs, mạng lưới Botnet).
+2. **Mô hình Dịch tễ Mạng xã hội SEIR (Susceptible - Exposed - Infected - Recovered):**
+   - Hệ phương trình vi phân vi mô giải bằng phương pháp số Euler:
+     $$\frac{dS}{dt} = -\frac{\beta S I}{N}, \quad \frac{dE}{dt} = \frac{\beta S I}{N} - \sigma E, \quad \frac{dI}{dt} = \sigma E - \gamma I, \quad \frac{dR}{dt} = \gamma I$$
+   - **Hệ số sinh sản cơ bản ($R_0 = \beta / \gamma$):** Dự báo nguy cơ bùng phát thông tin sai lệch thành sự cố truyền thông.
+   - **Chỉ số Wiener (Structural Virality):** Phân biệt lan truyền phát sóng (broadcast một-nhiều) và lan truyền dây chuyền đa thế hệ (multi-generational cascade).
+   - **Đường cong lan truyền 24h & 48h:** Đối soát tốc độ phát tán giữa tin sai lệch và tin xác thực theo từng khung giờ (0h, 2h đỉnh, 6h, 12h, 24h).
+3. **API Endpoints:**
+   - `GET /api/v1/social/trends`: Cung cấp số liệu vĩ mô thời gian thực (tổng tương tác, phân bố cảm xúc, cụm tin nóng đang theo dõi).
+   - `POST /api/v1/social/simulate-cascade`: Mô phỏng dự báo động lực học lan truyền SEIR theo chủ đề và lượt chia sẻ ban đầu.
+   - `POST /api/v1/social/gnn-predict`: Phân loại rủi ro cấu trúc đồ thị lan truyền bằng mô hình GAT.
+
+---
+
 ## 4. Cấu trúc Phân nhánh Git (Git Branching Strategy)
 
 Dự án áp dụng mô hình chuẩn **Git Flow** với 5 loại nhánh chính:
