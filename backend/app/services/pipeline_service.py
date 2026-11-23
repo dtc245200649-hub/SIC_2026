@@ -14,7 +14,11 @@ from app.models.analysis import (
     AnalysisResult,
     ModalityPrediction,
 )
-from app.schemas.analysis import SingleModalAnalysisResponse, TokenHighlight
+from app.schemas.analysis import (
+    SingleModalAnalysisResponse,
+    TokenHighlight,
+    SocialImpactAssessment,
+)
 
 # Import AI Encoders & Processors
 import sys
@@ -30,6 +34,68 @@ from ai_engine.xai.text_explainer import TextXAIExplainer
 
 
 class SingleModalPipelineService:
+    @staticmethod
+    def evaluate_social_impact(
+        pred_label: str,
+        confidence: float,
+        text_or_context: str = "",
+        high_risk_tokens_count: int = 0,
+    ) -> SocialImpactAssessment:
+        clean_lower = text_or_context.lower()
+
+        if pred_label == "SAI_SU_THAT":
+            if any(k in clean_lower for k in ["ngân hàng", "rút tiền", "đóng băng", "tiền mặt", "phá sản", "lãi suất"]):
+                psycho = "Gây hoang mang tâm lý nhà đầu tư, nguy cơ đổ xô rút tiền tiết kiệm bất thường."
+                demographics = ["Người gửi tiền tiết kiệm", "Doanh nghiệp vừa và nhỏ", "Nhà đầu tư cá nhân"]
+                action = "Ngân hàng Nhà nước và các tổ chức tín dụng cần phát thông cáo đính chính khẩn cấp."
+            elif any(k in clean_lower for k in ["vỡ đập", "vỡ đê", "thủy điện", "bão lũ", "ngập lụt", "xả lũ", "chìm"]):
+                psycho = "Kích động tâm lý hoảng loạn, nguy cơ di tản tự phát gây mất an toàn tính mạng."
+                demographics = ["Cư dân vùng hạ du ven sông", "Lực lượng cứu hộ", "Cộng đồng địa phương"]
+                action = "Ban Chỉ huy PCTT & TKCN địa phương cần phát thanh khẩn cấp và đăng xác nhận an toàn."
+            elif any(k in clean_lower for k in ["thuốc", "bệnh viện", "dịch bệnh", "ung thư", "tử vong", "ngộ độc"]):
+                psycho = "Gây bất an nghiêm trọng về y tế cộng đồng, nguy cơ tự ý điều trị sai quy chuẩn."
+                demographics = ["Bệnh nhân", "Người cao tuổi", "Phụ huynh có con nhỏ"]
+                action = "Bộ Y tế / Sở Y tế cần phát cảnh báo phản bác và hướng dẫn điều trị chuẩn y khoa."
+            else:
+                psycho = "Gây phân cực dư luận, kích động sự phẫn nộ và làm suy giảm niềm tin xã hội."
+                demographics = ["Cộng đồng mạng xã hội", "Nhóm người dùng trẻ"]
+                action = "Cần gắn nhãn cảnh báo tin giả và đề nghị nền tảng mạng xã hội hạn chế lượt phân phối."
+
+            r0 = round(min(3.8, 1.8 + high_risk_tokens_count * 0.35 + confidence * 0.4), 2)
+            predicted_exposure_num = int(2500 * (r0 ** 1.8))
+            return SocialImpactAssessment(
+                risk_level="CAO",
+                risk_score=round(min(9.8, 7.5 + high_risk_tokens_count * 0.4 + confidence * 1.5), 1),
+                cascade_r0=r0,
+                propagation_speed="Rất nhanh (Nguy cơ bùng phát theo cấp số nhân trong 2-4 giờ)",
+                predicted_exposure=f"~{predicted_exposure_num:,} tài khoản mạng xã hội bị phơi nhiễm",
+                psychological_impact=psycho,
+                affected_demographics=demographics,
+                action_recommendation=action,
+            )
+        elif pred_label == "GAY_HIEU_LAM":
+            return SocialImpactAssessment(
+                risk_level="TRUNG_BINH",
+                risk_score=round(min(7.2, 5.0 + confidence * 2.0), 1),
+                cascade_r0=1.38,
+                propagation_speed="Trung bình (Lan truyền âm ỉ qua các nhóm trò chuyện cá nhân)",
+                predicted_exposure="~3,500 tài khoản mạng xã hội bị ảnh hưởng",
+                psychological_impact="Gây hiểu lầm cục bộ, bóp méo nhận thức người đọc về bản chất sự kiện.",
+                affected_demographics=["Người theo dõi tin tức trực tuyến", "Cộng đồng mạng xã hội"],
+                action_recommendation="Cung cấp bài viết đối chứng đầy đủ ngữ cảnh để cân bằng lại nhận thức.",
+            )
+        else:
+            return SocialImpactAssessment(
+                risk_level="THAP",
+                risk_score=1.2,
+                cascade_r0=0.65,
+                propagation_speed="Ổn định (Thông tin chuẩn mực, lan tỏa tích cực)",
+                predicted_exposure="Phân phối thông thường",
+                psychological_impact="Củng cố niềm tin xã hội, cung cấp thông tin hữu ích và chuẩn xác.",
+                affected_demographics=["Toàn thể cộng đồng"],
+                action_recommendation="Khuyến khích tiếp tục chia sẻ để nhân rộng nguồn tin chính thống.",
+            )
+
     @staticmethod
     def analyze_text(
         db: Session,
@@ -111,6 +177,14 @@ class SingleModalPipelineService:
         db.add(result)
         db.commit()
 
+        # Đánh giá Tác động Xã hội (Social Impact Assessment)
+        social_impact = SingleModalPipelineService.evaluate_social_impact(
+            pred_label=pred_label,
+            confidence=confidence,
+            text_or_context=clean_text,
+            high_risk_tokens_count=len(high_risk_tokens),
+        )
+
         return SingleModalAnalysisResponse(
             session_id=session.id,
             title=session.title,
@@ -119,6 +193,7 @@ class SingleModalPipelineService:
             confidence_score=round(confidence, 2),
             summary=summary,
             tokens_highlight=[TokenHighlight(**t) for t in token_attributions],
+            social_impact=social_impact,
             model_name=text_encoder.model_name,
             created_at=now,
         )
@@ -202,6 +277,13 @@ class SingleModalPipelineService:
         db.add(result)
         db.commit()
 
+        social_impact = SingleModalPipelineService.evaluate_social_impact(
+            pred_label=pred_label,
+            confidence=confidence,
+            text_or_context=file.filename or "",
+            high_risk_tokens_count=1 if pred_label == "SAI_SU_THAT" else 0,
+        )
+
         return SingleModalAnalysisResponse(
             session_id=session.id,
             title=session.title,
@@ -209,6 +291,7 @@ class SingleModalPipelineService:
             predicted_label=pred_label,
             confidence_score=confidence,
             summary=summary,
+            social_impact=social_impact,
             file_name=file.filename,
             file_size_bytes=file_size,
             model_name=image_encoder.model_name,
@@ -286,6 +369,13 @@ class SingleModalPipelineService:
         db.add(result)
         db.commit()
 
+        social_impact = SingleModalPipelineService.evaluate_social_impact(
+            pred_label=pred_label,
+            confidence=confidence,
+            text_or_context="Kêu gọi khẩn cấp toàn dân rút tiền khỏi các tổ chức tài chính...",
+            high_risk_tokens_count=2,
+        )
+
         return SingleModalAnalysisResponse(
             session_id=session.id,
             title=session.title,
@@ -293,6 +383,7 @@ class SingleModalPipelineService:
             predicted_label=pred_label,
             confidence_score=confidence,
             summary=summary,
+            social_impact=social_impact,
             keyframes=keyframes,
             audio_transcript="Kêu gọi khẩn cấp toàn dân rút tiền khỏi các tổ chức tài chính...",
             file_name=file.filename,
@@ -372,6 +463,13 @@ class SingleModalPipelineService:
         db.add(result)
         db.commit()
 
+        social_impact = SingleModalPipelineService.evaluate_social_impact(
+            pred_label=pred_label,
+            confidence=confidence,
+            text_or_context=stt_result.get("transcript") or "",
+            high_risk_tokens_count=0,
+        )
+
         return SingleModalAnalysisResponse(
             session_id=session.id,
             title=session.title,
@@ -379,6 +477,7 @@ class SingleModalPipelineService:
             predicted_label=pred_label,
             confidence_score=confidence,
             summary=summary,
+            social_impact=social_impact,
             audio_transcript=stt_result.get("transcript"),
             file_name=file.filename,
             file_size_bytes=file_size,

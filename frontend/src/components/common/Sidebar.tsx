@@ -58,10 +58,10 @@ const navSections: NavSection[] = [
         tagColor: 'bg-sky-50 text-sky-800 border-sky-300',
       },
       {
-        name: 'Phân tích tác động xã hội',
+        name: 'Giám sát Xu hướng Xã hội',
         path: '/social-graph',
         icon: Share2,
-        tag: 'Lan truyền',
+        tag: 'Vĩ mô',
         tagColor: 'bg-amber-50 text-amber-800 border-amber-300',
       },
     ],

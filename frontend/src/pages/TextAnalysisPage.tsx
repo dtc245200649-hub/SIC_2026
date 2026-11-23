@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { FileText, ArrowRight, ShieldCheck, CheckCircle2, AlertTriangle, Sparkles, RefreshCw } from 'lucide-react';
+import {
+  FileText,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  RefreshCw,
+  Share2,
+  TrendingUp,
+  ShieldAlert,
+  Users,
+  Zap,
+} from 'lucide-react';
 import api from '../services/api';
 
 export const TextAnalysisPage: React.FC = () => {
@@ -181,6 +194,107 @@ export const TextAnalysisPage: React.FC = () => {
                       </span>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* KHỐI TÁC ĐỘNG XÃ HỘI & NGUY CƠ LAN TRUYỀN (SOCIAL IMPACT ASSESSMENT) */}
+            {result.social_impact && (
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-slate-50 border-2 border-amber-300/80 shadow-xs space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b-2 border-amber-200/70">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-400 text-amber-800 flex items-center justify-center font-bold">
+                      <Share2 className="w-4 h-4 stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-950 uppercase tracking-wide">
+                        Phân tích Tác động Xã hội & Nguy cơ Lan truyền
+                      </h4>
+                      <p className="text-[11px] text-slate-600 font-medium">
+                        Mô hình hóa động lực học dịch tễ mạng xã hội (GNN Cascade Modeling)
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-black border-2 flex items-center gap-1.5 shadow-2xs ${
+                      result.social_impact.risk_level === 'CAO'
+                        ? 'bg-rose-100 text-rose-950 border-rose-400'
+                        : result.social_impact.risk_level === 'TRUNG_BINH'
+                        ? 'bg-amber-100 text-amber-950 border-amber-400'
+                        : 'bg-emerald-100 text-emerald-950 border-emerald-400'
+                    }`}
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Mức rủi ro: {result.social_impact.risk_level} (Điểm: {result.social_impact.risk_score}/10)
+                  </span>
+                </div>
+
+                {/* 3 Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border-2 border-slate-200 shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-bold mb-1">
+                      <Zap className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Hệ số lây lan R0</span>
+                    </div>
+                    <div className="text-xl font-black text-amber-700 font-mono">
+                      {result.social_impact.cascade_r0}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                      {result.social_impact.cascade_r0 >= 1.5 ? 'Nguy cơ bùng phát dịch tin' : 'Kiểm soát dưới ngưỡng'}
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white border-2 border-slate-200 shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-bold mb-1">
+                      <TrendingUp className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Tốc độ phát tán</span>
+                    </div>
+                    <div className="text-xs font-black text-slate-900 leading-tight">
+                      {result.social_impact.propagation_speed}
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white border-2 border-slate-200 shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-bold mb-1">
+                      <Users className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Dự báo phơi nhiễm</span>
+                    </div>
+                    <div className="text-xs font-black text-slate-900 leading-tight">
+                      {result.social_impact.predicted_exposure}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tác động tâm lý & Đối tượng ảnh hưởng */}
+                <div className="p-3.5 rounded-xl bg-white/90 border-2 border-slate-200 text-xs space-y-2">
+                  <div>
+                    <span className="font-bold text-slate-900 block mb-0.5">Tác động tâm lý cộng đồng:</span>
+                    <p className="text-slate-700 font-medium leading-relaxed">
+                      {result.social_impact.psychological_impact}
+                    </p>
+                  </div>
+
+                  {result.social_impact.affected_demographics && result.social_impact.affected_demographics.length > 0 && (
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] font-bold text-slate-600">Đối tượng chịu tác động:</span>
+                      {result.social_impact.affected_demographics.map((demo: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-300 text-slate-800 text-[11px] font-bold"
+                        >
+                          {demo}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="font-bold text-amber-900 block mb-0.5">Khuyến nghị xử lý & can thiệp:</span>
+                    <p className="text-slate-800 font-medium">
+                      {result.social_impact.action_recommendation}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

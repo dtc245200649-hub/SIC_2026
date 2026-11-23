@@ -61,11 +61,11 @@ export const SocialGraphPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div>
           <h1 className="text-xl lg:text-2xl font-black text-slate-950 tracking-tight">
-            Phân tích tác động xã hội & Xu hướng lan truyền
+            Giám sát Xu hướng Lan truyền Mạng xã hội (Toàn cảnh Vĩ mô)
           </h1>
           <p className="text-xs text-slate-600 mt-1 font-medium max-w-3xl leading-relaxed">
-            Theo dõi lượt tương tác, phân cực cảm xúc bình luận, cụm chủ đề nóng và tốc độ lan
-            truyền tin sai lệch trên mạng xã hội Việt Nam.
+            Theo dõi lượt tương tác, phân cực cảm xúc dư luận, các cụm chủ đề nóng và động lực học lây
+            lan tin sai lệch trên không gian mạng xã hội Việt Nam.
           </p>
         </div>
 

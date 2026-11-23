@@ -249,7 +249,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [activeXaiTab, setActiveXaiTab] = useState<'text' | 'gradcam' | 'social' | 'evidence'>('text');
+  const [activeXaiTab, setActiveXaiTab] = useState<'text' | 'gradcam' | 'evidence'>('text');
   const [analyzing, setAnalyzing] = useState<boolean>(false);
   const [currentResult, setCurrentResult] = useState<SampleItem['result'] | null>(null);
 
@@ -838,17 +838,6 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveXaiTab('social')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  activeXaiTab === 'social'
-                    ? 'bg-[#0a192f] text-white shadow-sm'
-                    : 'text-slate-800 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300'
-                }`}
-              >
-                Tác động xã hội
-              </button>
-              <button
-                type="button"
                 onClick={() => setActiveXaiTab('evidence')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                   activeXaiTab === 'evidence'
@@ -972,49 +961,7 @@ export const KiemChungTrucTiepPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 3: TÁC ĐỘNG XÃ HỘI */}
-            {activeXaiTab === 'social' && (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="grid grid-cols-3 gap-3.5">
-                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
-                    <span className="text-xs text-slate-600 block mb-1 font-bold">Hệ số lây lan R0</span>
-                    <strong className="text-2xl text-amber-700 font-mono font-black">
-                      {currentResult.socialImpact.r0}
-                    </strong>
-                    <span className="text-xs text-rose-700 font-black block mt-1">
-                      Nguy cơ: {currentResult.socialImpact.level}
-                    </span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
-                    <span className="text-xs text-slate-600 block mb-1 font-bold">Tốc độ phát tán</span>
-                    <strong className="text-xs text-slate-900 font-mono block mt-2 font-black">
-                      {currentResult.socialImpact.speed}
-                    </strong>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-white border-2 border-slate-300 text-center shadow-2xs">
-                    <span className="text-xs text-slate-600 block mb-1 font-bold">Dự báo phơi nhiễm</span>
-                    <strong className="text-xs text-slate-900 font-mono block mt-2 font-black">
-                      {currentResult.socialImpact.predictedExposure}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-300 text-xs text-slate-900">
-                  <div className="flex items-center gap-2 font-black text-amber-900 mb-1.5 text-[13px]">
-                    <Share2 className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-                    <span>Mô hình hóa Đồ thị Lan truyền GNN (Rumor Cascade Model):</span>
-                  </div>
-                  <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                    Nội dung đang có xu hướng nhân rộng qua các hội nhóm địa phương. Đồ thị mạng
-                    xã hội xác định 3 nút khuếch đại (KOL Amplifiers) đang tái chia sẻ với tần suất cao.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: DẪN CHỨNG ĐỐI SOÁT TỪ KHO DỮ LIỆU */}
+            {/* TAB 3: DẪN CHỨNG ĐỐI SOÁT TỪ KHO DỮ LIỆU */}
             {activeXaiTab === 'evidence' && (
               <div className="space-y-4 animate-fadeIn">
                 <div className="flex items-center justify-between">
@@ -1110,6 +1057,90 @@ export const KiemChungTrucTiepPage: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* CARD 3: PHÂN TÍCH TÁC ĐỘNG XÃ HỘI & NGUY CƠ LAN TRUYỀN (GNN CASENODE) */}
+          <div className="bg-white border-2 border-amber-300/80 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b-2 border-amber-200/70">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-400 text-amber-800 flex items-center justify-center font-bold">
+                  <Share2 className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-950 uppercase tracking-wide">
+                    Phân tích Tác động Xã hội & Nguy cơ Lan truyền
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    Mô hình hóa động lực học dịch tễ tin giả & phân tích mạng lưới lan truyền (GNN Cascade Modeling)
+                  </p>
+                </div>
+              </div>
+
+              <span
+                className={`px-3.5 py-1 rounded-full text-xs font-black border-2 flex items-center gap-1.5 shadow-2xs ${
+                  currentResult.socialImpact.level === 'CAO'
+                    ? 'bg-rose-100 text-rose-950 border-rose-400'
+                    : currentResult.socialImpact.level === 'TRUNG_BINH'
+                    ? 'bg-amber-100 text-amber-950 border-amber-400'
+                    : 'bg-emerald-100 text-emerald-950 border-emerald-400'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
+                Cấp độ nguy hại: {currentResult.socialImpact.level}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-center shadow-2xs">
+                <span className="text-xs text-slate-600 block mb-1 font-bold">Hệ số lây lan R0</span>
+                <strong className="text-2xl text-amber-700 font-mono font-black">
+                  {currentResult.socialImpact.r0}
+                </strong>
+                <span className="text-[11px] text-slate-500 font-bold block mt-1">
+                  {currentResult.socialImpact.r0 >= 1.5 ? '⚡ Nguy cơ bùng phát dịch tin' : '✓ Dưới ngưỡng lây nhiễm'}
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-center shadow-2xs">
+                <span className="text-xs text-slate-600 block mb-1 font-bold">Tốc độ phát tán ghi nhận</span>
+                <strong className="text-xs text-slate-950 font-mono block mt-2 font-black">
+                  {currentResult.socialImpact.speed}
+                </strong>
+                <span className="text-[11px] text-slate-500 font-medium block mt-1">
+                  Dựa trên lưu lượng tương tác {currentResult.weights.social}%
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-center shadow-2xs">
+                <span className="text-xs text-slate-600 block mb-1 font-bold">Dự báo quy mô phơi nhiễm</span>
+                <strong className="text-xs text-slate-950 font-mono block mt-2 font-black">
+                  {currentResult.socialImpact.predictedExposure}
+                </strong>
+                <span className="text-[11px] text-slate-500 font-medium block mt-1">
+                  Không gian mạng xã hội Việt Nam
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-50/70 border-2 border-amber-300 text-xs text-slate-900 space-y-2">
+              <div className="flex items-center gap-2 font-black text-amber-950 text-[13px]">
+                <Share2 className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+                <span>Nhận định tác động tâm lý & Hành vi cộng đồng:</span>
+              </div>
+              <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                {isFake
+                  ? 'Nội dung chứa từ ngữ gây sốc và hình ảnh nhạy cảm, có nguy cơ kích động tâm lý hoang mang, kích hoạt chuỗi chia sẻ hoảng loạn qua các hội nhóm địa phương. Đồ thị GNN phát hiện các nút mạng khuếch đại (KOLs / Fanpages) đang tái chia sẻ với tần suất cao.'
+                  : 'Nội dung phản ánh thông tin thời sự chính thống, tỷ lệ phân cực thấp, góp phần định hướng dư luận tích cực và nâng cao cảnh giác cộng đồng.'}
+              </p>
+              <div className="pt-2 border-t border-amber-200 flex items-center justify-between flex-wrap gap-2 text-[11px]">
+                <span className="font-bold text-slate-800">Khuyến nghị xử lý:</span>
+                <span className="text-slate-700 font-medium">
+                  {isFake
+                    ? 'Cần cơ quan chức năng hoặc báo chí chính thống phát thông cáo đính chính khẩn cấp để chặn đứng đà lây lan.'
+                    : 'Khuyến khích chia sẻ bài viết chính thống để đẩy lùi các tin đồn thất thiệt.'}
+                </span>
+              </div>
+            </div>
           </div>
         </>
       )}
