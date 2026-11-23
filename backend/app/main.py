@@ -13,12 +13,9 @@ from app.api.v1.router import api_v1_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Quản lý vòng đời ứng dụng (Khởi động tác vụ nền RAG Scheduler)."""
-    from app.services.rag_scheduler import RAGAutoScheduler
-    scheduler = RAGAutoScheduler.get_instance()
-    scheduler.start(initial_delay_seconds=5)
+    """Quản lý vòng đời ứng dụng (Hệ thống Học sâu Đa phương thức thuần túy)."""
+    # RAG Scheduler đã được vô hiệu hóa theo định hướng Học sâu thuần túy
     yield
-    scheduler.stop()
 
 
 def create_app() -> FastAPI:

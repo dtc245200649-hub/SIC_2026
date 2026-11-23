@@ -11,9 +11,8 @@
 Hệ thống là một nền tảng nghiên cứu kết hợp sản phẩm thực nghiệm hoàn chỉnh, có khả năng:
 - **Xử lý Đa phương thức:** Tiếp nhận đồng thời Văn bản (Text), Hình ảnh (Image), Video (Keyframes), và Âm thanh (Audio).
 - **Học sâu & Dung hợp (Multimodal Fusion):** PhoBERT (Text), Vision Transformer ViT (Image/Video), Whisper (Audio STT), kết hợp qua cơ chế Cross-modal Attention và Reliability-aware Gated Fusion.
-- **Explainable AI (XAI):** Minh bạch hóa lý do dự đoán của mô hình qua Word Attribution, Visual Heatmap (Grad-CAM), và tỷ trọng đóng góp của từng phương thức.
-- **Kiểm chứng thông tin (Fact-Checking):** Truy xuất bằng chứng từ kho tri thức báo chí chính thống (VnExpress, Tuổi Trẻ, Thanh Niên) qua RSS Feeds 24/7 và đối soát phát biểu qua Natural Language Inference (NLI).
-- **Phân tích mạng xã hội (GNN):** Xây dựng đồ thị lan truyền và phân tích tác động, tốc độ lan truyền bằng Graph Neural Networks (PyG).
+- **Explainable AI (XAI):** Minh bạch hóa lý do dự đoán của mô hình qua Word Attribution (SHAP), Visual Heatmap (Grad-CAM), và tỷ trọng đóng góp của từng phương thức.
+- **Đánh giá Tác động Xã hội & Lan truyền (GNN):** Xây dựng đồ thị lan truyền và phân tích tác động, tốc độ lây lan và các nút khuếch đại bằng Graph Neural Networks (PyG / Rumor Cascade Modeling).
 
 ---
 
