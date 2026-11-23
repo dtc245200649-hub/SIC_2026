@@ -36,9 +36,26 @@ DUANNHOM/
 - [x] **Giai đoạn 3: Frontend** (React + Vite + Tailwind, 12 trang chức năng phân tích & đối soát)
 - [x] **Giai đoạn 4: AI Cơ bản** (PhoBERT v2 fine-tuned 1.6GB Checkpoint, ViT Patch Embedding, Keyframe Extraction, Whisper STT)
 - [x] **Giai đoạn 5: AI Đa phương thức** (Cross-Modal Co-Attention, Reliability-aware Gated Fusion, Cross-Modal Inconsistency Detection)
-- [x] **Giai đoạn 6: XAI Giải thích mô hình** (Token Attribution SHAP, Grad-CAM Heatmap $14\times14$ patches, Stacked Modality Contribution)
+- [x] **Giai đoạn 6: XAI Giải thích mô hình** (Token Attribution SHAP, Grad-CAM Heatmap $14\times14$ patches, Multimodal Predictive Uncertainty, Gated Fusion Weights)
 - [x] **Giai đoạn 7: GNN & Lan truyền xã hội** (Cây lan truyền, GraphSAGE/GAT, Epidemic Cascade R0 tích hợp liền mạch)
 - [ ] **Giai đoạn 8: Hoàn thiện & Docker** (Đóng gói Docker Compose, Test E2E)
+
+---
+
+## 3.1. Chi tiết Giai đoạn 6: Explainable AI (XAI) Đa phương thức
+1. **Ngôn ngữ (Text XAI):**
+   - **Local Feature Attribution:** Bôi màu nhiệt trọng số ảnh hưởng của từng token theo phổ rủi ro tin giả.
+   - **Shapley Values (SHAP):** Bảng xếp hạng các cụm từ kích động then chốt (+SHAP tăng nguy cơ sai sự thật, -SHAP củng cố tin chuẩn mực).
+2. **Thị giác (Visual XAI):**
+   - **Grad-CAM Attention Map:** Phân tích lưới 196 patches ($14\times14$) từ Vision Transformer (ViT-Base-Patch16-224).
+   - **Tampering Anomaly Detection:** Tự động phát hiện bất thường cục bộ do can thiệp cắt ghép ảnh (Image Splicing) và xuất Bounding Box vùng nghi vấn.
+3. **Hợp nhất & Lập luận đa phương thức (Multimodal Fusion Explainer):**
+   - **Phân rã trọng số đóng góp (Gated Modality Weights):** Tính toán độ tin cậy và phân bổ trọng số động giữa PhoBERT v2, ViT và GNN.
+   - **Độ bất định suy luận (Predictive Uncertainty):** Lượng hóa độ bất định dựa trên biên độ tự tin dự đoán ($U = 1 - |\text{confidence} - 0.5| \times 2$).
+   - **Giải thích mâu thuẫn chéo (Cross-Modal Inconsistency):** Sinh tóm tắt lý do tự nhiên bằng tiếng Việt khi phát hiện sự bất đối xứng giữa nội dung bài viết và hình ảnh minh họa.
+4. **API Endpoints:**
+   - `POST /api/v1/analysis/multimodal`: Phân tích kết hợp ảnh + văn bản với đầy đủ báo cáo giải thích XAI.
+   - `POST /api/v1/analysis/xai/explain`: Truy vấn độc lập báo cáo SHAP, Grad-CAM và độ bất định.
 
 ---
 

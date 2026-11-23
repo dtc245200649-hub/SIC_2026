@@ -74,12 +74,13 @@ class MultimodalMisinformationDetector(nn.Module):
         self,
         text: Optional[str] = None,
         image_input: Optional[Any] = None,
+        text_input: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Dự đoán suy luận học sâu đa phương thức toàn diện từ nội dung văn bản và hình ảnh.
         """
         # 1. Trích xuất văn bản
-        text_content = text or "Nội dung bài viết chưa cung cấp văn bản chi tiết."
+        text_content = text or text_input or "Nội dung bài viết chưa cung cấp văn bản chi tiết."
         text_pred_res = self.text_encoder.predict_misinformation(text_content)
         text_vec = self.text_encoder.extract_features(text_content)
 
@@ -120,8 +121,10 @@ class MultimodalMisinformationDetector(nn.Module):
 
         return {
             "overall_prediction": overall_pred,
+            "predicted_label": overall_pred,
             "confidence_score": confidence,
             "cross_modal_inconsistency": inconsistency,
+            "inconsistency_score": inconsistency,
             "summary": summary,
             "modality_breakdown": [
                 {

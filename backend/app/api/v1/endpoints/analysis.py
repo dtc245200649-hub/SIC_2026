@@ -9,8 +9,11 @@ from app.models.analysis import AnalysisSession, AnalysisResult
 from app.schemas.analysis import (
     TextAnalysisRequest,
     SingleModalAnalysisResponse,
+    MultimodalAnalysisResponse,
+    XAIExplainRequest,
 )
 from app.services.pipeline_service import SingleModalPipelineService
+from ai_engine.xai.fusion_explainer import MultimodalXAIOrchestrator
 
 router = APIRouter()
 
@@ -85,6 +88,52 @@ def analyze_audio(
         db=db,
         user=current_user,
         file=file,
+    )
+
+
+@router.post(
+    "/multimodal",
+    response_model=MultimodalAnalysisResponse,
+    summary="Phân tích Học sâu Đa phương thức (Multimodal Fusion + XAI)",
+    description="Hợp nhất Văn bản (PhoBERT v2) và Hình ảnh (ViT) bằng Cross-Attention & Gated Fusion, giải thích qua SHAP & Grad-CAM.",
+)
+def analyze_multimodal(
+    text: Optional[str] = Form(None),
+    title: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not text and not file:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vui lòng cung cấp ít nhất nội dung văn bản hoặc tệp ảnh đa phương thức.",
+        )
+    return SingleModalPipelineService.analyze_multimodal(
+        db=db,
+        user=current_user,
+        text=text,
+        file=file,
+        title=title,
+    )
+
+
+@router.post(
+    "/xai/explain",
+    summary="Sinh báo cáo Giải thích Mô hình AI (Explainable AI - XAI Report)",
+    description="Tính toán Token SHAP values, ma trận Grad-CAM 196 patches và phân rã trọng số đa phương thức.",
+)
+def explain_xai(
+    payload: XAIExplainRequest,
+    current_user: User = Depends(get_current_user),
+):
+    orchestrator = MultimodalXAIOrchestrator()
+    return orchestrator.generate_explanation_report(
+        text_content=payload.text,
+        image_input=None,
+        inconsistency_score=payload.inconsistency or 0.65,
+        confidence_score=payload.confidence or 0.88,
+        predicted_label=payload.label or "SAI_SU_THAT",
     )
 
 

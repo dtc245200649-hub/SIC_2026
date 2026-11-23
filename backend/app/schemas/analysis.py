@@ -12,6 +12,8 @@ class TokenHighlight(BaseModel):
     word: str
     weight: float
     is_influential: bool
+    shap_score: Optional[str] = None
+    type: Optional[str] = "normal"
 
 
 class SocialImpactAssessment(BaseModel):
@@ -33,6 +35,14 @@ class SingleModalAnalysisResponse(BaseModel):
     confidence_score: float
     summary: str
     tokens_highlight: Optional[List[TokenHighlight]] = None
+    shap_values: Optional[List[Dict[str, Any]]] = None
+    heatmap_grid: Optional[List[Dict[str, Any]]] = None
+    gradcam_conclusion: Optional[str] = None
+    high_attention_bbox: Optional[Dict[str, Any]] = None
+    uncertainty_score: Optional[float] = None
+    uncertainty_level: Optional[str] = None
+    modality_weights: Optional[List[Dict[str, Any]]] = None
+    cross_modal_inconsistency: Optional[float] = None
     social_impact: Optional[SocialImpactAssessment] = None
     keyframes: Optional[List[Dict[str, Any]]] = None
     audio_transcript: Optional[str] = None
@@ -40,3 +50,32 @@ class SingleModalAnalysisResponse(BaseModel):
     file_size_bytes: Optional[int] = None
     model_name: str
     created_at: datetime
+
+
+class MultimodalAnalysisResponse(BaseModel):
+    session_id: int
+    title: str
+    predicted_label: str  # SAI_SU_THAT, GAY_HIEU_LAM, CHINH_XAC
+    confidence_score: float
+    uncertainty_score: float
+    uncertainty_level: str
+    cross_modal_inconsistency: float
+    summary: str
+    summary_reasoning: str
+    modality_contributions: List[Dict[str, Any]]
+    tokens_highlight: Optional[List[TokenHighlight]] = None
+    shap_values: Optional[List[Dict[str, Any]]] = None
+    heatmap_grid: Optional[List[Dict[str, Any]]] = None
+    gradcam_conclusion: Optional[str] = None
+    high_attention_bbox: Optional[Dict[str, Any]] = None
+    social_impact: Optional[SocialImpactAssessment] = None
+    file_name: Optional[str] = None
+    model_name: str = "Multimodal Gated Cross-Attention + XAI"
+    created_at: datetime
+
+
+class XAIExplainRequest(BaseModel):
+    text: Optional[str] = Field(None, description="Nội dung văn bản")
+    confidence: Optional[float] = Field(0.85, ge=0.0, le=1.0)
+    inconsistency: Optional[float] = Field(0.70, ge=0.0, le=1.0)
+    label: Optional[str] = Field("SAI_SU_THAT")

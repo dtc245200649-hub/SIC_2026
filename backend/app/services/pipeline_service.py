@@ -16,6 +16,7 @@ from app.models.analysis import (
 )
 from app.schemas.analysis import (
     SingleModalAnalysisResponse,
+    MultimodalAnalysisResponse,
     TokenHighlight,
     SocialImpactAssessment,
 )
@@ -31,6 +32,9 @@ from ai_engine.encoders.image_encoder import VisionTransformerEncoder
 from ai_engine.encoders.video_processor import VideoKeyframeProcessor
 from ai_engine.encoders.audio_processor import AudioWhisperProcessor
 from ai_engine.xai.text_explainer import TextXAIExplainer
+from ai_engine.xai.visual_explainer import VisualXAIExplainer
+from ai_engine.xai.fusion_explainer import MultimodalXAIOrchestrator
+from ai_engine.fusion.multimodal_model import MultimodalMisinformationDetector
 
 
 class SingleModalPipelineService:
@@ -125,15 +129,20 @@ class SingleModalPipelineService:
         pred_label = dl_pred.get("predicted_label", "CAN_KIEM_CHUNG")
         confidence = dl_pred.get("confidence_score", 0.75)
 
-        # 2. Phân tích Token Attribution XAI
+        # 2. Phân tích Token Attribution XAI & SHAP
         explainer = TextXAIExplainer()
         token_attributions = explainer.explain_text(clean_text)
-        high_risk_tokens = [t for t in token_attributions if t["weight"] > 0.75]
+        shap_values = explainer.compute_shap_values(clean_text, top_k=5)
+        high_risk_tokens = [t for t in token_attributions if t["weight"] > 0.70]
 
-        # Điều chỉnh nhãn nếu có từ ngữ mang tính đe dọa / kích động cực mạnh
-        if len(high_risk_tokens) >= 2 and pred_label != "SAI_SU_THAT":
+        # Chuẩn hóa độ tin cậy và quyết định nhãn
+        if len(high_risk_tokens) >= 1:
             pred_label = "SAI_SU_THAT"
             confidence = max(confidence, 0.88)
+        else:
+            confidence = max(confidence, 0.65)
+
+        uncertainty_val = round(1.0 - abs(confidence - 0.5) * 2.0, 3)
 
         # 3. Tổng hợp kết luận AI
         if pred_label == "SAI_SU_THAT":
@@ -195,6 +204,8 @@ class SingleModalPipelineService:
             confidence_score=round(confidence, 2),
             summary=summary,
             tokens_highlight=[TokenHighlight(**t) for t in token_attributions],
+            shap_values=shap_values,
+            uncertainty_score=uncertainty_val,
             social_impact=social_impact,
             model_name=text_encoder.model_name,
             created_at=now,
@@ -245,6 +256,10 @@ class SingleModalPipelineService:
         confidence = vit_result.get("confidence_score", 0.85)
         summary = vit_result.get("summary", "Phát hiện dấu hiệu can thiệp thị giác (image splicing) qua bản đồ chú ý ViT.")
 
+        # Trích xuất Visual XAI Grad-CAM
+        visual_explainer = VisualXAIExplainer()
+        xai_report = visual_explainer.explain_image(saved_path)
+
         now = datetime.now(timezone.utc)
         session = AnalysisSession(
             user_id=user.id,
@@ -292,6 +307,9 @@ class SingleModalPipelineService:
             predicted_label=pred_label,
             confidence_score=confidence,
             summary=summary,
+            heatmap_grid=xai_report.get("heatmap_grid"),
+            gradcam_conclusion=xai_report.get("gradcam_conclusion"),
+            high_attention_bbox=xai_report.get("high_attention_bbox"),
             social_impact=social_impact,
             file_name=file.filename,
             file_size_bytes=file_size,
@@ -483,5 +501,127 @@ class SingleModalPipelineService:
             file_name=file.filename,
             file_size_bytes=file_size,
             model_name="openai/whisper-tiny + Librosa",
+            created_at=now,
+        )
+
+    @staticmethod
+    def analyze_multimodal(
+        db: Session,
+        user: User,
+        text: Optional[str] = None,
+        file: Optional[UploadFile] = None,
+        title: Optional[str] = None,
+    ) -> MultimodalAnalysisResponse:
+        """
+        Xử lý phân tích đa phương thức hoàn chỉnh (Multimodal Deep Learning + XAI):
+        1. Xử lý văn bản (PhoBERT v2) và hình ảnh (ViT).
+        2. Tích hợp mô hình Cross-Modal Fusion & phát hiện mâu thuẫn chéo (Inconsistency Head).
+        3. Tạo báo cáo giải thích toàn diện XAI (SHAP Values, Grad-CAM 196 patches, Gated Weights, Uncertainty).
+        4. Lưu vết CSDL và trả về đầy đủ định dạng chuẩn cho UI.
+        """
+        clean_text = VietnameseTextPreprocessor.clean_text(text) if text else ""
+        saved_path = None
+        file_size = 0
+        file_name = None
+
+        if file and file.filename:
+            allowed_exts = [".jpg", ".jpeg", ".png", ".webp"]
+            ext = os.path.splitext(file.filename)[1].lower()
+            if ext in allowed_exts:
+                upload_dir = os.path.join(settings.UPLOAD_DIR, "multimodal")
+                os.makedirs(upload_dir, exist_ok=True)
+                saved_filename = f"multi_{int(datetime.now().timestamp())}_{file.filename}"
+                saved_path = os.path.join(upload_dir, saved_filename)
+                with open(saved_path, "wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
+                file_size = os.path.getsize(saved_path)
+                file_name = file.filename
+
+        # 1. Dự đoán bằng Multimodal Fusion Detector
+        fusion_detector = MultimodalMisinformationDetector()
+        fusion_pred = fusion_detector.predict_multimodal(
+            text_input=clean_text or "Hình ảnh không kèm mô tả",
+            image_input=saved_path,
+        )
+
+        pred_label = fusion_pred.get("predicted_label", "CAN_KIEM_CHUNG")
+        confidence = float(fusion_pred.get("confidence_score", 0.88))
+        inconsistency = float(fusion_pred.get("inconsistency_score", 0.45))
+        summary = fusion_pred.get("summary", "Đã hoàn thành phân tích hợp nhất đa phương thức.")
+
+        # 2. Sinh báo cáo XAI hoàn chỉnh từ MultimodalXAIOrchestrator
+        xai_orchestrator = MultimodalXAIOrchestrator()
+        xai_report = xai_orchestrator.generate_explanation_report(
+            text_content=clean_text,
+            image_input=saved_path,
+            inconsistency_score=inconsistency,
+            confidence_score=confidence,
+            predicted_label=pred_label,
+        )
+
+        now = datetime.now(timezone.utc)
+        session_title = title or (clean_text[:60] + "..." if clean_text else f"Đa phương thức: {file_name or 'Nội dung'}")
+
+        session = AnalysisSession(
+            user_id=user.id,
+            title=session_title,
+            status="COMPLETED",
+            primary_modality="MULTIMODAL",
+            created_at=now,
+            completed_at=now,
+        )
+        db.add(session)
+        db.flush()
+
+        if saved_path:
+            up_file = UploadedFileModel(
+                session_id=session.id,
+                file_name=file_name or "uploaded_media",
+                file_path=saved_path,
+                file_type="IMAGE",
+                file_size_bytes=file_size,
+                mime_type="image/jpeg",
+                created_at=now,
+            )
+            db.add(up_file)
+
+        result = AnalysisResult(
+            session_id=session.id,
+            overall_prediction=pred_label,
+            confidence_score=round(confidence, 2),
+            cross_modal_inconsistency_score=round(inconsistency, 2),
+            summary_explanation=xai_report["summary_reasoning"],
+            created_at=now,
+        )
+        db.add(result)
+        db.commit()
+
+        # Đánh giá tác động xã hội
+        social_impact = SingleModalPipelineService.evaluate_social_impact(
+            pred_label=pred_label,
+            confidence=confidence,
+            text_or_context=clean_text or file_name or "",
+            high_risk_tokens_count=len([t for t in xai_report["token_attributions"] if t.get("weight", 0) > 0.7]),
+        )
+
+        return MultimodalAnalysisResponse(
+            session_id=session.id,
+            title=session.title,
+            predicted_label=pred_label,
+            confidence_score=round(confidence, 3),
+            uncertainty_score=xai_report["uncertainty_score"],
+            uncertainty_level=xai_report["uncertainty_level"],
+            cross_modal_inconsistency=xai_report["inconsistency_score"],
+            summary=summary,
+            summary_reasoning=xai_report["summary_reasoning"],
+            modality_contributions=xai_report["modality_contributions"],
+            tokens_highlight=[TokenHighlight(**t) for t in xai_report["token_attributions"]],
+            shap_values=xai_report["shap_values"],
+            heatmap_grid=xai_report["heatmap_grid"],
+            gradcam_conclusion=xai_report["gradcam_conclusion"],
+            high_attention_bbox=xai_report["high_attention_bbox"],
+            social_impact=social_impact,
+            file_name=file_name,
+            model_name="Multimodal Gated Cross-Attention + XAI",
             created_at=now,
         )

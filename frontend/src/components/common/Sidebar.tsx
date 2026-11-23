@@ -48,13 +48,20 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Mạng xã hội & Lan truyền',
+    title: 'Dữ liệu & Lan truyền',
     items: [
+      {
+        name: 'Kho dữ liệu',
+        path: '/fact-check',
+        icon: Database,
+        tag: 'Dữ liệu',
+        tagColor: 'bg-sky-50 text-sky-800 border-sky-300',
+      },
       {
         name: 'Giám sát Xu hướng Xã hội',
         path: '/social-graph',
         icon: Share2,
-        tag: 'GNN Model',
+        tag: 'Vĩ mô',
         tagColor: 'bg-amber-50 text-amber-800 border-amber-300',
       },
     ],

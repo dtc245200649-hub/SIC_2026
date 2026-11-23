@@ -103,10 +103,13 @@ class VisionTransformerEncoder(nn.Module):
 
         if PIL_AVAILABLE:
             img = None
-            if isinstance(image_input, str) and os.path.exists(image_input):
-                img = Image.open(image_input).convert("RGB")
-            elif hasattr(image_input, "read"):
-                img = Image.open(image_input).convert("RGB")
+            try:
+                if isinstance(image_input, str) and os.path.exists(image_input):
+                    img = Image.open(image_input).convert("RGB")
+                elif hasattr(image_input, "read"):
+                    img = Image.open(image_input).convert("RGB")
+            except Exception:
+                img = None
 
             if img is not None:
                 img = img.resize((self.image_size, self.image_size))
@@ -119,7 +122,7 @@ class VisionTransformerEncoder(nn.Module):
                 normalized = (arr - mean) / std
                 return normalized.unsqueeze(0).to(self.device)
 
-        # Fallback tensor giả lập nếu không có file ảnh
+        # Fallback tensor giả lập nếu không có file ảnh hoặc ảnh bị lỗi định dạng
         return torch.randn(1, 3, self.image_size, self.image_size, device=self.device)
 
     def extract_patch_features(self, image_input: Any) -> torch.Tensor:

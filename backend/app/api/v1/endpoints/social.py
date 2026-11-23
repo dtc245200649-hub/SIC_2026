@@ -69,29 +69,80 @@ def analyze_social_url(
     # 2. Phân tích XAI giải thích từ ngữ
     tokens_highlight = text_explainer.explain_text(full_text)
 
-    # 3. SUY LUẬN HỌC SÂU ĐA PHƯƠNG THỨC THUẦN TÚY (Pure Deep Learning Inference)
-    # Dựa trên biểu diễn ngữ nghĩa PhoBERT, trọng số chú ý SHAP và phát hiện giật gân/bất thường
-    evidence_matches: List[EvidenceMatchItem] = []
+    # 3. ĐỐI SOÁT TRI THỨC VỚI KHO DỮ LIỆU BÁO CHÍ CHÍNH THỐNG (Ground Truth Database)
+    all_evidence = db.scalars(
+        select(EvidenceDocument).join(EvidenceDocument.source).order_by(desc(EvidenceDocument.published_date)).limit(50)
+    ).all()
 
-    high_risk_tokens = [t for t in tokens_highlight if t.get("weight", 0) > 0.78]
-    if len(high_risk_tokens) >= 2:
-        predicted_label = "SAI_SU_THAT"
-        confidence_score = min(0.96, round(0.78 + len(high_risk_tokens) * 0.06, 2))
-        summary = (
-            f"Mô hình PhoBERT phát hiện văn phong giật gân, chứa {len(high_risk_tokens)} cụm từ có trọng số rủi ro cao: "
-            f"{', '.join([t['word'] for t in high_risk_tokens[:3]])}. Tín hiệu kích động tâm lý hoang mang được kích hoạt."
-        )
-    elif len(high_risk_tokens) == 1:
-        predicted_label = "CAN_KIEM_CHUNG"
-        confidence_score = 0.75
-        summary = (
-            f"Mô hình nhận diện cụm từ có độ nhạy cảm cao '{high_risk_tokens[0]['word']}'. "
-            f"Thông tin mang sắc thái phóng đại hoặc bán sự thật, khuyến nghị kiểm chứng thêm."
-        )
+    evidence_matches: List[EvidenceMatchItem] = []
+    top_match_score = 0.0
+    top_match_doc = None
+    top_match_verdict = "RELATED"
+
+    debunk_keywords = ["bác bỏ", "đính chính", "tin đồn", "xử phạt", "thất thiệt", "không có chuyện", "cảnh báo lừa đảo", "giả mạo"]
+
+    for doc in all_evidence:
+        combined_doc_text = f"{doc.title} {doc.snippet}"
+        sim_score = _calculate_token_jaccard(full_text, combined_doc_text)
+
+        if sim_score > 0.08:
+            # Xác định lập luận: Bác bỏ hay Ủng hộ
+            is_debunking = any(kw in combined_doc_text.lower() for kw in debunk_keywords)
+            verdict = "REFUTES" if is_debunking else "SUPPORTS"
+
+            evidence_matches.append(
+                EvidenceMatchItem(
+                    source_name=doc.source.name if doc.source else "Báo chí chính thống",
+                    title=doc.title,
+                    url=doc.url,
+                    snippet=doc.snippet,
+                    similarity_score=sim_score,
+                    verdict=verdict,
+                )
+            )
+
+            if sim_score > top_match_score:
+                top_match_score = sim_score
+                top_match_doc = doc
+                top_match_verdict = verdict
+
+    evidence_matches.sort(key=lambda x: x.similarity_score, reverse=True)
+    evidence_matches = evidence_matches[:3]
+
+    # 4. SUY LUẬN KẾT QUẢ DỰA TRÊN BẰNG CHỨNG THỰC TẾ (Không đoán mò)
+    if top_match_doc and top_match_score >= 0.15:
+        if top_match_verdict == "REFUTES":
+            predicted_label = "SAI_SU_THAT"
+            confidence_score = min(0.96, round(0.85 + top_match_score * 0.5, 2))
+            summary = (
+                f"Nội dung trùng khớp với vụ việc đã được {top_match_doc.source.name if top_match_doc.source else 'Báo chí'} "
+                f"bác bỏ và đính chính chính thức trong bài báo: '{top_match_doc.title}'."
+            )
+        else:
+            predicted_label = "CHINH_XAC"
+            confidence_score = min(0.95, round(0.82 + top_match_score * 0.4, 2))
+            summary = (
+                f"Nội dung phản ánh sự kiện chính thống được xác thực bởi {top_match_doc.source.name if top_match_doc.source else 'Báo chí'}: "
+                f"'{top_match_doc.title}'."
+            )
     else:
-        predicted_label = "CHINH_XAC"
-        confidence_score = 0.88
-        summary = "Mô hình ngôn ngữ nhận diện văn phong trung tính, khách quan, không phát hiện đặc trưng giật gân hay ngôn từ kích động."
+        # Nếu chưa có bài báo đối soát trực tiếp -> Đánh giá ngôn ngữ thận trọng
+        high_risk_tokens = [t for t in tokens_highlight if t.get("weight", 0) > 0.8]
+        if len(high_risk_tokens) >= 2:
+            predicted_label = "SAI_SU_THAT"
+            confidence_score = 0.82
+            summary = (
+                f"Phát hiện văn phong chứa các cụm từ có mức độ kích động và giật gân cao ({', '.join([t['word'] for t in high_risk_tokens[:3]])}). "
+                f"Chưa có nguồn tin chính thống nào xác nhận sự việc này."
+            )
+        elif len(high_risk_tokens) == 1:
+            predicted_label = "CAN_KIEM_CHUNG"
+            confidence_score = 0.65
+            summary = "Thông tin chưa có bằng chứng xác nhận chính thức từ cơ quan chức năng hoặc báo chí. Khuyến nghị người đọc đối soát trước khi chia sẻ."
+        else:
+            predicted_label = "CAN_KIEM_CHUNG"
+            confidence_score = 0.70
+            summary = "Nội dung trung tính nhưng chưa có bài báo kiểm chứng đối ứng trong cơ sở dữ liệu."
 
     # 5. MÔ HÌNH HÓA ĐỘNG LỰC HỌC LAN TRUYỀN (GNN Epidemic Cascade Modeling)
     virality_score = engagement_data["virality_score"]
