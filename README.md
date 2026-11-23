@@ -38,7 +38,7 @@ DUANNHOM/
 - [x] **Giai đoạn 5: AI Đa phương thức** (Cross-Modal Co-Attention, Reliability-aware Gated Fusion, Cross-Modal Inconsistency Detection)
 - [x] **Giai đoạn 6: XAI Giải thích mô hình** (Token Attribution SHAP, Grad-CAM Heatmap $14\times14$ patches, Multimodal Predictive Uncertainty, Gated Fusion Weights)
 - [x] **Giai đoạn 7: GNN & Lan truyền xã hội** (Cây lan truyền, GraphSAGE/GAT, Epidemic Cascade R0 tích hợp liền mạch)
-- [ ] **Giai đoạn 8: Hoàn thiện & Docker** (Đóng gói Docker Compose, Test E2E)
+- [x] **Giai đoạn 8: Hoàn thiện & Docker** (Đóng gói Docker Compose, Test E2E 100% Passed)
 
 ---
 
@@ -74,6 +74,37 @@ DUANNHOM/
    - `GET /api/v1/social/trends`: Cung cấp số liệu vĩ mô thời gian thực (tổng tương tác, phân bố cảm xúc, cụm tin nóng đang theo dõi).
    - `POST /api/v1/social/simulate-cascade`: Mô phỏng dự báo động lực học lan truyền SEIR theo chủ đề và lượt chia sẻ ban đầu.
    - `POST /api/v1/social/gnn-predict`: Phân loại rủi ro cấu trúc đồ thị lan truyền bằng mô hình GAT.
+
+---
+
+## 3.3. Chi tiết Giai đoạn 8: Đóng gói Containerization & Hướng dẫn Triển khai Docker
+
+### Khởi chạy toàn bộ hệ thống bằng Docker Compose:
+```bash
+# 1. Khởi chạy 3 services (PostgreSQL 16, FastAPI Backend & React Frontend Nginx)
+docker compose up --build -d
+
+# 2. Kiểm tra trạng thái sức khỏe các container
+docker compose ps
+
+# 3. Theo dõi log thời gian thực
+docker compose logs -f backend
+```
+
+| Dịch vụ (*Service*) | Cổng nội bộ (*Container*) | Cổng máy chủ (*Host*) | Địa chỉ truy cập |
+| :--- | :--- | :--- | :--- |
+| **Frontend UI** | `80` (Nginx) | `3000` | [http://localhost:3000](http://localhost:3000) |
+| **API Backend** | `8000` (Uvicorn) | `8000` | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| **PostgreSQL** | `5432` | `5432` | `localhost:5432` (misinfo_db) |
+
+### Kiểm thử End-to-End (E2E Verification):
+```bash
+# Chạy kịch bản kiểm thử tích hợp toàn bộ 8 giai đoạn:
+python scripts/verify_e2e.py
+
+# Chạy toàn bộ 31 bài test tự động:
+python -m pytest backend/tests/ -v
+```
 
 ---
 

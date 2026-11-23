@@ -1,0 +1,81 @@
+services:
+  # =========================================================================
+  # 1. Cơ sở dữ liệu quan hệ PostgreSQL 16
+  # =========================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: misinfo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: misinfo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secure_password_2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d misinfo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - misinfo_network
+
+  # =========================================================================
+  # 2. API Backend & AI Engine (FastAPI + PhoBERT + ViT + Whisper + GNN)
+  # =========================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: misinfo_backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      DATABASE_URL: postgresql://postgres:postgres_secure_password_2026@db:5432/misinfo_db
+      SECRET_KEY: misinformation_detection_secret_key_vietnam_2026_super_secure_key
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      UPLOAD_DIR: /app/backend/uploads
+      MAX_UPLOAD_SIZE_MB: 50
+      HF_HOME: /app/data/huggingface
+      TORCH_HOME: /app/data/torch
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/backend/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - misinfo_network
+
+  # =========================================================================
+  # 3. Giao diện người dùng Frontend (React 18 + Vite + Tailwind + Nginx)
+  # =========================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: misinfo_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - misinfo_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  misinfo_network:
+    driver: bridge
