@@ -15,6 +15,9 @@ import {
   FileText,
   X,
   Cpu,
+  Activity,
+  Clock,
+  Play,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -23,6 +26,8 @@ export const FactCheckPage: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const [syncingRss, setSyncingRss] = useState(false);
   const [buildingIndex, setBuildingIndex] = useState(false);
+  const [triggeringScheduler, setTriggeringScheduler] = useState(false);
+  const [schedulerInfo, setSchedulerInfo] = useState<any | null>(null);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [verifiedResult, setVerifiedResult] = useState<any | null>(null);
@@ -79,9 +84,44 @@ export const FactCheckPage: React.FC = () => {
     }
   };
 
+  const fetchSchedulerStatus = async () => {
+    try {
+      const res = await api.get('/fact-check/scheduler/status');
+      if (res.data) {
+        setSchedulerInfo(res.data);
+      }
+    } catch {
+      // Bỏ qua nếu offline
+    }
+  };
+
   useEffect(() => {
     fetchEvidence();
+    fetchSchedulerStatus();
   }, []);
+
+  // Kích hoạt chu kỳ tự động nạp tri thức ngay lập tức (Trigger Now)
+  const handleTriggerScheduler = async () => {
+    setTriggeringScheduler(true);
+    setSyncStatusMsg(null);
+    try {
+      const res = await api.post('/fact-check/scheduler/trigger', null, {
+        params: { max_items: 8 },
+      });
+      if (res.data) {
+        const added = res.data.new_documents || 0;
+        setSyncStatusMsg(
+          `Chu kỳ nạp ngầm hoàn tất: đã thêm mới ${added} bài báo. Tái tạo Vector RAG: ${res.data.rag_rebuilt ? 'CÓ (Đã sinh vector mới)' : 'Giữ nguyên'}.`
+        );
+        await fetchEvidence();
+        await fetchSchedulerStatus();
+      }
+    } catch {
+      setSyncStatusMsg('Lỗi khi kích hoạt chu kỳ nạp tri thức.');
+    } finally {
+      setTriggeringScheduler(false);
+    }
+  };
 
   // Xử lý đồng bộ RSS thời gian thực
   const handleSyncRss = async () => {
@@ -246,6 +286,53 @@ export const FactCheckPage: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* METHOD 4: AUTOMATED BACKGROUND RAG SCHEDULER STATUS CARD */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-[#0a192f] text-white border-2 border-slate-800 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Activity className="w-5 h-5 text-sky-400 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-wider text-sky-300">
+                Phương pháp 4: Tự động hóa nạp tri thức RAG (24/7 Background Scheduler)
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                ĐANG CHẠY NGẦM
+              </span>
+            </div>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              Hệ thống tự động quét <strong>17 luồng RSS báo chính thống</strong> theo chu kỳ <strong>{schedulerInfo?.interval_minutes || 60} phút/lần</strong>. Bất cứ bài viết cảnh báo hoặc thời sự mới nào sẽ được tự động băm nhỏ và tái sinh Vector RAG ngay lập tức mà không cần thao tác tay.
+            </p>
+            <div className="flex items-center gap-4 mt-2 text-[10px] text-slate-400 font-mono">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3 text-slate-400" />
+                Chu kỳ: {schedulerInfo?.interval_minutes || 60} phút/lần
+              </span>
+              <span>•</span>
+              <span>Tổng chu kỳ đã chạy: {schedulerInfo?.total_cycles_completed || 1}</span>
+              {schedulerInfo?.last_run_at && (
+                <>
+                  <span>•</span>
+                  <span>Lần chạy gần nhất: {new Date(schedulerInfo.last_run_at).toLocaleTimeString('vi-VN')}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleTriggerScheduler}
+          disabled={triggeringScheduler}
+          className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-2 transition disabled:opacity-50 whitespace-nowrap shadow-sm cursor-pointer self-stretch md:self-auto justify-center"
+        >
+          <Play className={`w-3.5 h-3.5 fill-current ${triggeringScheduler ? 'animate-spin' : ''}`} />
+          <span>{triggeringScheduler ? 'Đang chạy chu kỳ...' : 'Chạy chu kỳ ngay'}</span>
+        </button>
+      </div>
 
       {/* BENCHMARK RESEARCH SUMMARY CARD */}
       <div className="p-4 rounded-2xl bg-sky-50/60 border-2 border-sky-200 text-xs text-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">

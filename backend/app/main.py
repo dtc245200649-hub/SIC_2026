@@ -11,6 +11,16 @@ from app.db.seed import seed_initial_data
 from app.api.v1.router import api_v1_router
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Quản lý vòng đời ứng dụng (Khởi động tác vụ nền RAG Scheduler)."""
+    from app.services.rag_scheduler import RAGAutoScheduler
+    scheduler = RAGAutoScheduler.get_instance()
+    scheduler.start(initial_delay_seconds=5)
+    yield
+    scheduler.stop()
+
+
 def create_app() -> FastAPI:
     """Khởi tạo ứng dụng FastAPI với đầy đủ cấu hình middleware và routes."""
     # Đảm bảo các bảng cơ sở dữ liệu được khởi tạo và nạp dữ liệu mẫu ban đầu
@@ -26,6 +36,7 @@ def create_app() -> FastAPI:
         description="Nền tảng học sâu đa phương thức có khả năng giải thích trong phát hiện tin giả và phân tích mạng xã hội.",
         version="0.1.0",
         debug=settings.DEBUG,
+        lifespan=lifespan,
     )
 
     # Cấu hình CORS cho phép Frontend truy cập an toàn

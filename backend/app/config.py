@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 50
 
+    # Tự động hóa nạp tri thức định kỳ vào Vector RAG (Cách 4)
+    RAG_AUTO_SYNC_ENABLED: bool = True
+    RAG_AUTO_SYNC_INTERVAL_MINUTES: int = 60
+
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), "..", ".env"),
         env_file_encoding="utf-8",

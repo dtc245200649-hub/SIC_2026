@@ -8,6 +8,7 @@ from app.api.deps import get_db
 from app.models.evidence import EvidenceDocument, EvidenceSource
 from app.services.rss_collector import RssCollectorService
 from app.services.rag_service import VectorRAGService
+from app.services.rag_scheduler import RAGAutoScheduler
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from app.schemas.fact_check import (
@@ -155,3 +156,39 @@ def verify_claim(
     db: Session = Depends(get_db),
 ):
     return VectorRAGService.verify_claim(claim=payload.claim, db=db)
+
+
+# =========================================================================
+# QUẢN LÝ TỰ ĐỘNG HÓA NẠP TRI THỨC VÀO RAG (PHƯƠNG PHÁP 4)
+# =========================================================================
+@router.get(
+    "/scheduler/status",
+    summary="Kiểm tra trạng thái dịch vụ tự động nạp tri thức định kỳ (Phương pháp 4)",
+)
+def get_scheduler_status():
+    return RAGAutoScheduler.get_instance().get_status()
+
+
+@router.post(
+    "/scheduler/trigger",
+    summary="Kích hoạt chu kỳ tự động nạp tri thức ngay lập tức",
+)
+def trigger_scheduler_cycle(
+    max_items: int = Query(default=8, ge=1, le=20),
+):
+    scheduler = RAGAutoScheduler.get_instance()
+    res = scheduler.execute_sync_cycle(max_items_per_feed=max_items)
+    return res
+
+
+@router.post(
+    "/scheduler/config",
+    summary="Cấu hình lịch tự động nạp tri thức",
+)
+def update_scheduler_config(
+    enabled: Optional[bool] = Query(default=None),
+    interval_minutes: Optional[int] = Query(default=None, ge=5, le=1440),
+):
+    scheduler = RAGAutoScheduler.get_instance()
+    scheduler.update_config(enabled=enabled, interval_minutes=interval_minutes)
+    return scheduler.get_status()
