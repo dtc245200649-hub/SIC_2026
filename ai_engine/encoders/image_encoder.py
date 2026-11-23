@@ -1,4 +1,10 @@
+import os
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+# Khóa cứng thư mục cache trên ổ D:
+_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.environ["HF_HOME"] = os.path.join(_BASE_DIR, "data", "huggingface")
+os.environ["TORCH_HOME"] = os.path.join(_BASE_DIR, "data", "torch")
 
 try:
     import torch

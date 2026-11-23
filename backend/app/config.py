@@ -2,6 +2,12 @@ import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Khóa cứng toàn bộ bộ nhớ đệm AI, HuggingFace và PyTorch trên ổ D: (tránh ghi vào ổ C:)
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.environ["HF_HOME"] = os.path.join(_PROJECT_ROOT, "data", "huggingface")
+os.environ["TORCH_HOME"] = os.path.join(_PROJECT_ROOT, "data", "torch")
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+
 
 class Settings(BaseSettings):
     """
