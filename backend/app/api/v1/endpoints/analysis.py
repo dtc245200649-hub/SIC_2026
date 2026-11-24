@@ -11,8 +11,11 @@ from app.schemas.analysis import (
     SingleModalAnalysisResponse,
     MultimodalAnalysisResponse,
     XAIExplainRequest,
+    ExtractUrlRequest,
+    ExtractUrlResponse,
 )
 from app.services.pipeline_service import SingleModalPipelineService
+from app.services.social_scraper import social_scraper
 from ai_engine.xai.fusion_explainer import MultimodalXAIOrchestrator
 
 router = APIRouter()
@@ -116,6 +119,25 @@ def analyze_multimodal(
         file=file,
         title=title,
     )
+
+
+@router.post(
+    "/extract-url",
+    response_model=ExtractUrlResponse,
+    summary="Trích xuất nội dung từ đường link URL bài báo hoặc MXH",
+    description="Tự động bóc tách tiêu đề, mô tả, toàn văn bài báo, ảnh đại diện và video từ đường link (VnExpress, TikTok, Facebook, YouTube...).",
+)
+def extract_url_content(
+    payload: ExtractUrlRequest,
+):
+    try:
+        data = social_scraper.extract_url_full(payload.url)
+        return ExtractUrlResponse(**data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Không thể trích xuất nội dung từ URL: {str(e)}",
+        )
 
 
 @router.post(

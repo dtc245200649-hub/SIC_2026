@@ -52,6 +52,23 @@ class SingleModalAnalysisResponse(BaseModel):
     created_at: datetime
 
 
+class ExtractUrlRequest(BaseModel):
+    url: str = Field(..., min_length=5, description="Đường dẫn URL bài báo, video hoặc mạng xã hội")
+
+
+class ExtractUrlResponse(BaseModel):
+    url: str
+    platform: str
+    title: str
+    description: str
+    content_text: str
+    author_name: str
+    thumbnail_url: Optional[str] = None
+    video_url: Optional[str] = None
+    media_type: str = "ARTICLE"
+    metadata_source: str
+
+
 class MultimodalAnalysisResponse(BaseModel):
     session_id: int
     title: str

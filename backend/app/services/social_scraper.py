@@ -210,16 +210,17 @@ class SocialMediaScraper:
         source_mode = "CANONICAL_URL_PARSER"
         notes = "Trích xuất thông tin qua Canonical URL Parser."
         thumbnail_url = None
+        video_url = None
 
-        # Thử lấy dữ liệu thời gian thực từ thẻ OpenGraph và Title của bài báo
+        # Thử lấy dữ liệu thời gian thực từ thẻ OpenGraph, Title và Body của bài báo
         try:
             req = urllib.request.Request(
                 url,
                 headers={"User-Agent": self.DEFAULT_USER_AGENT},
             )
-            with urllib.request.urlopen(req, timeout=3.5) as res:
+            with urllib.request.urlopen(req, timeout=4.0) as res:
                 if res.status == 200:
-                    html_content = res.read(65536).decode("utf-8", errors="ignore")
+                    html_content = res.read(131072).decode("utf-8", errors="ignore")
                     
                     # Trích xuất tiêu đề
                     og_title = re.search(r'<meta\s+property=["\']og:title["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
@@ -235,21 +236,42 @@ class SocialMediaScraper:
                         desc_tag = re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
                         meta_desc = desc_tag.group(1) if desc_tag else None
 
-                    # Trích xuất ảnh bài báo
+                    # Trích xuất ảnh đại diện bài báo (OpenGraph Image)
                     og_img = re.search(r'<meta\s+property=["\']og:image["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
                     if og_img:
                         thumbnail_url = og_img.group(1)
 
+                    # Trích xuất video nếu bài báo có gắn thẻ video
+                    og_vid = re.search(r'<meta\s+property=["\']og:video(?:[:\w]+)?["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
+                    if og_vid:
+                        video_url = og_vid.group(1)
+
+                    # Trích xuất đoạn văn bài báo nếu có
+                    p_matches = re.findall(r'<p[^>]*>(.*?)</p>', html_content, re.DOTALL | re.IGNORECASE)
+                    body_paragraphs = []
+                    for p in p_matches:
+                        clean_p = re.sub(r'<[^>]+>', '', p).strip()
+                        clean_p = html.unescape(clean_p)
+                        if len(clean_p) > 35 and not any(kw in clean_p.lower() for kw in ["copyright", "tòa soạn", "ý kiến độc giả", "đăng ký", "chính sách"]):
+                            body_paragraphs.append(clean_p)
+
+                    body_snippet = " ".join(body_paragraphs[:3]) if body_paragraphs else ""
+
                     if page_title:
                         page_title = html.unescape(page_title).strip()
                         meta_desc = html.unescape(meta_desc).strip() if meta_desc else ""
-                        caption = f"{page_title}. {meta_desc}".strip() if meta_desc else page_title
+                        parts = [page_title]
+                        if meta_desc and meta_desc != page_title:
+                            parts.append(meta_desc)
+                        if body_snippet and body_snippet not in meta_desc:
+                            parts.append(body_snippet)
+                        caption = ". ".join(parts).strip()
                         source_mode = "LIVE_WEB_ARTICLE"
-                        notes = f"Đã bóc tách trực tiếp tiêu đề và mô tả bài viết từ {domain}."
+                        notes = f"Đã bóc tách trực tiếp tiêu đề, ảnh và toàn văn bài viết từ {domain}."
         except Exception:
             pass
 
-        # Fallback giải mã slug trong URL nếu offline
+        # Fallback giải mã slug trong URL nếu offline hoặc bị chặn
         if not caption:
             slug_words = [w for w in re.split(r"[/_\-\?\=\&\.]", url) if len(w) > 3 and not w.isdigit()]
             meaningful = " ".join(slug_words[-7:]) if slug_words else ""
@@ -268,8 +290,9 @@ class SocialMediaScraper:
             "author_name": domain,
             "caption": caption,
             "hashtags": hashtags,
-            "media_type": "TEXT_ARTICLE",
+            "media_type": "VIDEO" if video_url else ("IMAGE_TEXT" if thumbnail_url else "TEXT_ARTICLE"),
             "thumbnail_url": thumbnail_url,
+            "video_url": video_url,
             "video_duration_sec": None,
             "audio_transcript": None,
             "engagement": {
@@ -296,6 +319,44 @@ class SocialMediaScraper:
         res = self.scrape_url(clean)
         caption = res.get("caption") or ""
         return caption if caption.strip() else clean
+
+    def extract_url_full(self, url: str) -> Dict[str, Any]:
+        """
+        Bóc tách toàn diện siêu dữ liệu đa phương thức (Văn bản, Hình ảnh, Video, Nguồn) từ URL bài báo hoặc MXH.
+        """
+        clean = url.strip()
+        scraped = self.scrape_url(clean)
+        platform = scraped.get("platform", "ONLINE_NEWSPAPER")
+        caption = scraped.get("caption") or ""
+
+        # Tách tiêu đề và mô tả
+        title = ""
+        description = ""
+        if ". " in caption:
+            parts = caption.split(". ", 1)
+            title = parts[0].strip()
+            description = parts[1].strip()
+        else:
+            title = caption
+            description = caption
+
+        thumbnail = scraped.get("thumbnail_url")
+        video_url = scraped.get("video_url")
+        if not video_url and ("tiktok.com" in clean or "youtube.com" in clean or "youtu.be" in clean):
+            video_url = clean
+
+        return {
+            "url": clean,
+            "platform": platform,
+            "title": title or f"Nội dung từ {scraped.get('author_name', 'liên kết')}",
+            "description": description or title,
+            "content_text": caption,
+            "author_name": scraped.get("author_name", "Báo chí chính thống"),
+            "thumbnail_url": thumbnail,
+            "video_url": video_url,
+            "media_type": "VIDEO" if video_url else ("IMAGE_TEXT" if thumbnail else "TEXT"),
+            "metadata_source": scraped.get("metadata_source", "LIVE_WEB_ARTICLE"),
+        }
 
 
 social_scraper = SocialMediaScraper()
