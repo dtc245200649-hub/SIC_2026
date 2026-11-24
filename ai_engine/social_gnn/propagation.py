@@ -100,20 +100,27 @@ class CascadePropagationAnalyzer:
 
         # Tính toán R0 dựa trên độ nhạy cảm của chủ đề
         clean_lower = caption_or_topic.lower()
-        if any(k in clean_lower for k in ["vỡ đập", "vỡ đê", "thủy điện", "chết người", "sụp đổ"]):
+        if any(k in clean_lower for k in ["vỡ đập", "vỡ đê", "thủy điện", "chết người", "sụp đổ", "cháy lớn", "động đất", "chiến tranh"]):
             r0 = 2.85
             virality_speed = 210.0  # nodes/h
             cascade_depth = 8
             structural_virality = 3.84
             community_count = 18
             risk_level = "CAO"
-        elif any(k in clean_lower for k in ["rút tiền", "phá sản", "ngân hàng", "đổi tiền", "dịch bệnh"]):
+        elif any(k in clean_lower for k in ["thuế", "chuyển khoản", "văn bản mật", "rò rỉ", "rút tiền", "phá sản", "ngân hàng", "đổi tiền", "dịch bệnh", "lừa đảo", "bắt bớ", "tiền tệ"]):
             r0 = 2.40
             virality_speed = 165.0
             cascade_depth = 6
             structural_virality = 3.25
             community_count = 12
             risk_level = "CAO"
+        elif any(k in clean_lower for k in ["chính sách", "quy định", "hướng dẫn", "thông báo", "bác bỏ", "đính chính", "xác thực"]):
+            r0 = 0.85
+            virality_speed = 42.0
+            cascade_depth = 3
+            structural_virality = 1.60
+            community_count = 4
+            risk_level = "THAP"
         else:
             r0 = 1.35
             virality_speed = 64.0

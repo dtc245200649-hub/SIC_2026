@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import {
   Flame,
   Radio,
@@ -16,14 +17,26 @@ import {
   Search,
   Trash2,
   HelpCircle,
+  RefreshCw,
 } from 'lucide-react';
 import api from '../services/api';
 
 export const PropagationGnnPage: React.FC = () => {
+  const location = useLocation();
+
   // Input state for any news/topic or link
-  const [inputTopic, setInputTopic] = useState('Vỡ Đập Tràn Trọng Hạ Du Sông Hồng');
+  const [inputTopic, setInputTopic] = useState('VIDEO RÒ RỈ: Chính sách mới áp dụng thu thuế 35% tất cả các giao dịch chuyển khoản');
   const [initialSharesInput, setInitialSharesInput] = useState<number>(120);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Trạng thái trích xuất tự động từ Phân hệ Kiểm chứng & Phân tích
+  const [sourceFromAnalysis, setSourceFromAnalysis] = useState<{
+    isExtracted: boolean;
+    originalText?: string;
+    statusType?: 'FAKE' | 'VERIFIED' | 'UNVERIFIED';
+    verdictLabel?: string;
+    timestamp?: string;
+  }>({ isExtracted: false });
 
   // Dynamic state for propagation metrics
   const [propagationData, setPropagationData] = useState<{
@@ -155,6 +168,78 @@ export const PropagationGnnPage: React.FC = () => {
     }
   };
 
+  // Tự động kiểm tra và trích xuất dữ liệu từ Phân hệ Kiểm chứng & Phân tích
+  useEffect(() => {
+    let targetTopic = '';
+    let meta: any = null;
+
+    if (location.state && (location.state as any).topic) {
+      targetTopic = (location.state as any).topic;
+      meta = {
+        isExtracted: true,
+        originalText: targetTopic,
+        statusType: (location.state as any).statusType || 'FAKE',
+        verdictLabel: (location.state as any).verdictLabel || 'Đã kiểm chứng',
+        timestamp: new Date().toLocaleTimeString('vi-VN'),
+      };
+    } else {
+      try {
+        const savedClaim = localStorage.getItem('vietxai_latest_analyzed_claim');
+        const savedMetaStr = localStorage.getItem('vietxai_latest_analyzed_meta');
+        if (savedClaim && savedClaim.trim()) {
+          targetTopic = savedClaim.trim();
+          const parsed = savedMetaStr ? JSON.parse(savedMetaStr) : null;
+          meta = {
+            isExtracted: true,
+            originalText: savedClaim,
+            statusType: parsed?.statusType || 'FAKE',
+            verdictLabel: parsed?.verdictLabel || 'Đã kiểm chứng',
+            timestamp: parsed?.timestamp
+              ? new Date(parsed.timestamp).toLocaleTimeString('vi-VN')
+              : 'Vừa xong',
+          };
+        }
+      } catch (e) {
+        console.warn('Error reading sync data:', e);
+      }
+    }
+
+    if (targetTopic) {
+      setInputTopic(targetTopic);
+      if (meta) {
+        setSourceFromAnalysis(meta);
+      }
+      runPropagationAnalysis(targetTopic);
+    } else {
+      runPropagationAnalysis(inputTopic);
+    }
+  }, [location.state]);
+
+  const handleSyncFromAnalysis = () => {
+    try {
+      const savedClaim = localStorage.getItem('vietxai_latest_analyzed_claim');
+      const savedMetaStr = localStorage.getItem('vietxai_latest_analyzed_meta');
+      if (savedClaim && savedClaim.trim()) {
+        const parsed = savedMetaStr ? JSON.parse(savedMetaStr) : null;
+        setInputTopic(savedClaim.trim());
+        setSourceFromAnalysis({
+          isExtracted: true,
+          originalText: savedClaim.trim(),
+          statusType: parsed?.statusType || 'FAKE',
+          verdictLabel: parsed?.verdictLabel || 'Đã kiểm chứng',
+          timestamp: parsed?.timestamp
+            ? new Date(parsed.timestamp).toLocaleTimeString('vi-VN')
+            : 'Vừa xong',
+        });
+        runPropagationAnalysis(savedClaim.trim());
+      } else {
+        alert('Chưa có thông tin nào được kiểm chứng gần đây từ phân hệ Kiểm chứng & Phân tích.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handlePublishDebunk = () => {
     setCountermeasureStatus('Đã phát hành thông cáo báo chí khẩn và truyền thông sự thật.');
     // Khi phát hành đính chính, hệ số R0 được kéo giảm xuống dưới 1.0
@@ -190,6 +275,58 @@ export const PropagationGnnPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Auto-extracted Notification Banner from Analysis Page */}
+      {sourceFromAnalysis.isExtracted && (
+        <div className="p-3.5 bg-blue-50/90 border border-blue-200/90 rounded-xl shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className="p-1.5 bg-blue-600 text-white rounded-lg mt-0.5 sm:mt-0">
+              <Radio className="w-4 h-4 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-blue-950">
+                  Tự động trích xuất thông tin từ Phân hệ Kiểm chứng &amp; Giải thích
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                    sourceFromAnalysis.statusType === 'FAKE'
+                      ? 'bg-rose-100 text-rose-800 border-rose-300'
+                      : sourceFromAnalysis.statusType === 'VERIFIED'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-amber-100 text-amber-800 border-amber-300'
+                  }`}
+                >
+                  {sourceFromAnalysis.verdictLabel || 'Đã kiểm chứng'}
+                </span>
+                <span className="text-[11px] text-blue-600 font-medium">
+                  (Đồng bộ: {sourceFromAnalysis.timestamp})
+                </span>
+              </div>
+              <p className="text-[11px] text-blue-900 mt-0.5 line-clamp-1 italic font-medium">
+                "{sourceFromAnalysis.originalText}"
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              onClick={handleSyncFromAnalysis}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors cursor-pointer"
+              title="Lấy lại nội dung mới nhất từ bên phân hệ Kiểm chứng"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Đồng bộ lại</span>
+            </button>
+            <Link
+              to="/fact-check"
+              className="text-xs font-bold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-200 transition-colors whitespace-nowrap"
+            >
+              ← Xem bên Kiểm chứng
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Dynamic Input / Simulation Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">

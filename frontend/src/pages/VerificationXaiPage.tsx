@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
   RefreshCw,
@@ -16,12 +16,14 @@ import {
   HelpCircle,
   Database,
   Trash2,
+  Share2,
   Image as ImageIcon,
 } from 'lucide-react';
 import api from '../services/api';
 
 export const VerificationXaiPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // User input states
@@ -221,6 +223,23 @@ export const VerificationXaiPage: React.FC = () => {
             : 'Hình ảnh mang cấu trúc tự nhiên, không phát hiện dấu vết cắt ghép thô bạo.'),
         crossModalInconsistency: resData.cross_modal_inconsistency || 0.65,
       });
+
+      // Tự động đồng bộ hóa thông tin kiểm chứng sang Phân hệ Lan truyền (GNN & SEIR)
+      try {
+        localStorage.setItem('vietxai_latest_analyzed_claim', text.trim());
+        localStorage.setItem(
+          'vietxai_latest_analyzed_meta',
+          JSON.stringify({
+            text: text.trim(),
+            statusType: finalStatus,
+            verdictLabel: finalLabel,
+            verdictScore: finalStatus === 'UNVERIFIED' ? 62 : confPct,
+            timestamp: new Date().toISOString(),
+          })
+        );
+      } catch (e) {
+        console.warn('Sync storage error:', e);
+      }
     } catch (err) {
       console.error('Evaluation Error:', err);
       alert('Đã xảy ra lỗi khi gọi AI Engine. Vui lòng kiểm tra kết nối Backend FastAPI.');
@@ -563,6 +582,29 @@ export const VerificationXaiPage: React.FC = () => {
               <p className="text-xs text-slate-600 max-w-xs leading-relaxed">
                 {evaluationResult.verdictSummary}
               </p>
+            </div>
+
+            {/* Direct Bridge to Propagation Analysis */}
+            <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] text-slate-500 font-medium">
+                Dữ liệu kiểm chứng đã sẵn sàng để mô phỏng động lực học lan truyền.
+              </span>
+              <button
+                onClick={() =>
+                  navigate('/propagation', {
+                    state: {
+                      topic: inputText.trim(),
+                      fromAnalysis: true,
+                      statusType: evaluationResult.statusType,
+                      verdictLabel: evaluationResult.verdictLabel,
+                    },
+                  })
+                }
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Chuyển sang Phân tích Lan truyền (GNN / SEIR) ➔</span>
+              </button>
             </div>
           </div>
 
