@@ -4,28 +4,23 @@ import { Layout } from './components/common/Layout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { KiemChungTrucTiepPage } from './pages/KiemChungTrucTiepPage';
-import { MultimodalAnalysisPage } from './pages/MultimodalAnalysisPage';
-import { TextAnalysisPage } from './pages/TextAnalysisPage';
-import { ImageAnalysisPage } from './pages/ImageAnalysisPage';
-import { VideoAnalysisPage } from './pages/VideoAnalysisPage';
-import { AudioAnalysisPage } from './pages/AudioAnalysisPage';
-import { ResultXaiPage } from './pages/ResultXaiPage';
-import { FactCheckPage } from './pages/FactCheckPage';
-import { SocialGraphPage } from './pages/SocialGraphPage';
-import { HistoryPage } from './pages/HistoryPage';
-import { UserManagementPage } from './pages/UserManagementPage';
+
+// VietXAI 5 Standard Intelligence Views
+import { OverviewPage } from './pages/OverviewPage';
+import { VerificationXaiPage } from './pages/VerificationXaiPage';
+import { PropagationGnnPage } from './pages/PropagationGnnPage';
+import { KnowledgeBasePage } from './pages/KnowledgeBasePage';
+import { SocialRadarPage } from './pages/SocialRadarPage';
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* Public Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected Application Routes */}
+        {/* Protected VietXAI Intelligence Platform Routes */}
         <Route
           path="/"
           element={
@@ -34,21 +29,34 @@ export const App: React.FC = () => {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          {/* Mẫu chuẩn hợp nhất: Kiểm chứng trực tiếp & Giải thích XAI */}
-          <Route path="checker" element={<KiemChungTrucTiepPage />} />
-          <Route path="analysis/multimodal" element={<KiemChungTrucTiepPage />} />
-          
-          <Route path="analysis/text" element={<TextAnalysisPage />} />
-          <Route path="analysis/image" element={<ImageAnalysisPage />} />
-          <Route path="analysis/video" element={<VideoAnalysisPage />} />
-          <Route path="analysis/audio" element={<Navigate to="/analysis/video" replace />} />
-          <Route path="results/xai" element={<Navigate to="/checker" replace />} />
-          <Route path="fact-check" element={<FactCheckPage />} />
-          <Route path="data" element={<FactCheckPage />} />
-          <Route path="social-graph" element={<SocialGraphPage />} />
-          <Route path="history" element={<HistoryPage />} />
-          <Route path="users" element={<UserManagementPage />} />
+          {/* Tab 1: Tổng quan (Image 1) */}
+          <Route index element={<OverviewPage />} />
+          <Route path="tong-quan" element={<OverviewPage />} />
+          <Route path="dashboard" element={<OverviewPage />} />
+
+          {/* Tab 2: Kiểm chứng & XAI (Image 2) */}
+          <Route path="kiem-chung" element={<VerificationXaiPage />} />
+          <Route path="checker" element={<VerificationXaiPage />} />
+          <Route path="analysis" element={<VerificationXaiPage />} />
+          <Route path="analysis/multimodal" element={<VerificationXaiPage />} />
+          <Route path="analysis/text" element={<VerificationXaiPage />} />
+          <Route path="analysis/image" element={<VerificationXaiPage />} />
+          <Route path="analysis/video" element={<VerificationXaiPage />} />
+          <Route path="results/xai" element={<VerificationXaiPage />} />
+
+          {/* Tab 3: Lan truyền (Image 3) */}
+          <Route path="lan-truyen" element={<PropagationGnnPage />} />
+          <Route path="social-graph" element={<PropagationGnnPage />} />
+
+          {/* Tab 4: Cơ sở Tri thức (Image 4) */}
+          <Route path="tri-thuc" element={<KnowledgeBasePage />} />
+          <Route path="fact-check" element={<KnowledgeBasePage />} />
+          <Route path="data" element={<KnowledgeBasePage />} />
+
+          {/* Tab 5: Giám sát MXH (Image 5) */}
+          <Route path="giam-sat" element={<SocialRadarPage />} />
+          <Route path="history" element={<Navigate to="/" replace />} />
+          <Route path="users" element={<Navigate to="/" replace />} />
         </Route>
 
         {/* Fallback */}
