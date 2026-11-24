@@ -24,8 +24,8 @@ import api from '../services/api';
 export const PropagationGnnPage: React.FC = () => {
   const location = useLocation();
 
-  // Input state for any news/topic or link
-  const [inputTopic, setInputTopic] = useState('VIDEO RÒ RỈ: Chính sách mới áp dụng thu thuế 35% tất cả các giao dịch chuyển khoản');
+  // Input state for any news/topic or link (Khởi đầu trống, tự động nạp từ Kiểm chứng)
+  const [inputTopic, setInputTopic] = useState('');
   const [initialSharesInput, setInitialSharesInput] = useState<number>(120);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -56,25 +56,21 @@ export const PropagationGnnPage: React.FC = () => {
     sha256Hash: string;
     r0Desc: string;
   }>({
-    caseId: '#VN-2024-X892',
-    topicName: 'Vỡ Đập Tràn Trọng Hạ Du Sông Hồng',
-    threatLevel: 'CRISIS',
-    threatBadge: 'MỨC BÁO ĐỘNG CẤP IV: KHỦNG HOẢNG',
-    r0: 4.82,
-    r0Change: '+1.35/h',
-    isSafeR0: false,
-    viralitySpeed: 125,
-    platformDistribution: 'Tập trung chính trên TikTok (54%) & Facebook (31%)',
-    estimatedReach: 850000,
-    reachSubtext: 'Đã tiếp cận thực tế 324.6K người trong khu vực hạ du',
-    cibCount: 18,
-    cibAccounts: [
-      { username: 'user_782012a', platform: 'TikTok', shares: 28 },
-      { username: 'hoang.nam.9912', platform: 'Facebook', shares: 19 },
-      { username: 'tin_nhanh_song_hong', platform: 'TikTok', shares: 45 },
-    ],
-    sha256Hash: '9b2d8f99e4b7c120a11c03de4844390bce712',
-    r0Desc: 'Ngưỡng an toàn < 1.0 (Vượt ngưỡng 382%)',
+    caseId: '#VN-2026-CHỜ',
+    topicName: 'Chờ nạp thông tin giám định',
+    threatLevel: 'SAFE',
+    threatBadge: 'TRẠNG THÁI: HỆ THỐNG GNN & SEIR SẴN SÀNG',
+    r0: 0.0,
+    r0Change: '0.0/h',
+    isSafeR0: true,
+    viralitySpeed: 0,
+    platformDistribution: 'Chưa phát hiện phát tán mạng xã hội',
+    estimatedReach: 0,
+    reachSubtext: 'Chờ dữ liệu phân tích từ phân hệ Kiểm chứng',
+    cibCount: 0,
+    cibAccounts: [],
+    sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    r0Desc: 'Hệ thống sẵn sàng tiếp nhận luồng dữ liệu lan truyền.',
   });
 
   const [activeNode, setActiveNode] = useState<string | null>(null);
@@ -210,8 +206,6 @@ export const PropagationGnnPage: React.FC = () => {
         setSourceFromAnalysis(meta);
       }
       runPropagationAnalysis(targetTopic);
-    } else {
-      runPropagationAnalysis(inputTopic);
     }
   }, [location.state]);
 

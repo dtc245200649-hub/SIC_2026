@@ -26,10 +26,8 @@ export const VerificationXaiPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // User input states
-  const [inputText, setInputText] = useState(
-    'VIDEO RÒ RỈ: Chính sách mới áp dụng thu thuế 35% tất cả các giao dịch chuyển khoản trên 10 triệu đồng từ ngày 01 tháng sau. Văn bản mật đã được phê duyệt và sắp ban hành rộng rãi.'
-  );
+  // User input states (Bắt đầu với ô nhập trống - hoàn toàn động)
+  const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageMeta, setImageMeta] = useState<{
     resolution?: string;
@@ -60,33 +58,15 @@ export const VerificationXaiPage: React.FC = () => {
     gradcamConclusion: string;
     crossModalInconsistency: number;
   }>({
-    statusType: 'FAKE',
-    verdictLabel: 'Thông tin sai lệch nguy hại',
-    verdictScore: 94,
+    statusType: 'UNVERIFIED',
+    verdictLabel: 'Sẵn sàng kiểm chứng',
+    verdictScore: 0,
     verdictSummary:
-      'Mô hình Học sâu PhoBERT v2 và Kho Tri thức phát hiện các đặc trưng bịa đặt, kích động tâm lý tiêu cực về chính sách tài chính.',
-    tokens: [
-      { word: 'thu thuế 35%', meaning: 'Bịa đặt biểu thuế sai luật', isFake: true },
-      { word: 'văn bản mật', meaning: 'Tạo cảm giác rò rỉ giả', isFake: true },
-      { word: 'áp dụng ngay', meaning: 'Gây áp lực tâm lý hoảng loạn', isFake: true },
-      { word: 'chuyển khoản', meaning: 'Đánh trúng tâm lý người nộp thuế', isFake: true },
-    ],
-    matchedEvidences: [
-      {
-        id: 1,
-        title: 'Bộ Tài chính bác bỏ tin đồn thất thiệt áp thuế 35% giao dịch chuyển khoản',
-        url: 'https://baochinhphu.vn',
-        snippet:
-          'Tổng cục Thuế khẳng định quy định về thuế và giao dịch điện tử thực hiện nghiêm ngặt theo Luật Quản lý thuế hiện hành, không có quy định thu thuế 35% đối với các giao dịch chuyển khoản cá nhân như tin đồn bịa đặt trên mạng xã hội.',
-        source_name: 'Báo Điện tử Chính phủ',
-        source_domain: 'baochinhphu.vn',
-        published_date: 'Mới cập nhật',
-        similarity_score: 0.98,
-        nli_verdict: 'REFUTES',
-      },
-    ],
-    gradcamConclusion: 'Dấu vết cắt ghép âm thanh TTS lồng ghép vào khung hình văn bản cũ.',
-    crossModalInconsistency: 0.82,
+      'Hệ thống AI PhoBERT v2 và Kho Tri thức 1,210+ bài báo đã sẵn sàng. Vui lòng nhập hoặc dán nội dung cần kiểm chứng vào ô bên trái.',
+    tokens: [],
+    matchedEvidences: [],
+    gradcamConclusion: 'Chờ tải lên tệp hình ảnh để quét các vùng biến đổi Grad-CAM.',
+    crossModalInconsistency: 0,
   });
 
   // Handle incoming text from OverviewPage or SocialRadarPage
@@ -95,9 +75,6 @@ export const VerificationXaiPage: React.FC = () => {
       const incomingText = (location.state as any).text;
       setInputText(incomingText);
       runEvaluation(incomingText);
-    } else {
-      // Evaluate default input on initial load
-      runEvaluation(inputText);
     }
   }, [location.state]);
 
@@ -118,6 +95,18 @@ export const VerificationXaiPage: React.FC = () => {
     setInputText('');
     setSelectedImage(null);
     setImageMeta({});
+    setHasEvaluated(false);
+    setEvaluationResult({
+      statusType: 'UNVERIFIED',
+      verdictLabel: 'Sẵn sàng kiểm chứng',
+      verdictScore: 0,
+      verdictSummary:
+        'Hệ thống AI PhoBERT v2 và Kho Tri thức 1,210+ bài báo đã sẵn sàng. Vui lòng nhập hoặc dán nội dung cần kiểm chứng vào ô bên trái.',
+      tokens: [],
+      matchedEvidences: [],
+      gradcamConclusion: 'Chờ tải lên tệp hình ảnh để quét các vùng biến đổi Grad-CAM.',
+      crossModalInconsistency: 0,
+    });
   };
 
   // Run dynamic evaluation using PhoBERT v2 & Vector RAG (1,210 articles)
@@ -258,7 +247,13 @@ export const VerificationXaiPage: React.FC = () => {
 
   // Helper: Tô màu động trực tiếp trên đoạn văn bản đang kiểm chứng
   const renderDynamicHighlightedText = () => {
-    if (!inputText) return null;
+    if (!inputText.trim() || !hasEvaluated) {
+      return (
+        <div className="p-6 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+          Chưa có nội dung kiểm chứng. Vui lòng nhập văn bản ở ô số 1 bên trái và nhấn "Kiểm chứng ngay" để hiển thị phân tích XAI SHAP Attribution.
+        </div>
+      );
+    }
 
     const keywords = evaluationResult.tokens.map((t) => t.word.toLowerCase());
     const words = inputText.split(/(\s+)/);
@@ -456,7 +451,11 @@ export const VerificationXaiPage: React.FC = () => {
             </div>
 
             {/* Render Matched Evidence Articles */}
-            {evaluationResult.matchedEvidences.length > 0 ? (
+            {!hasEvaluated ? (
+              <div className="p-6 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                Hệ thống sẵn sàng đối soát với 1,210+ bài báo chính thống. Nhập nội dung cần kiểm chứng bên trên và nhấn "Kiểm chứng ngay".
+              </div>
+            ) : evaluationResult.matchedEvidences.length > 0 ? (
               <div className="space-y-3">
                 {evaluationResult.matchedEvidences.map((evidence, idx) => (
                   <div
@@ -535,24 +534,30 @@ export const VerificationXaiPage: React.FC = () => {
           <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide mb-2">
               <span
-                className={`w-2 h-2 rounded-full animate-pulse ${
-                  evaluationResult.statusType === 'FAKE'
-                    ? 'bg-rose-600'
+                className={`w-2 h-2 rounded-full ${
+                  !hasEvaluated
+                    ? 'bg-slate-400'
+                    : evaluationResult.statusType === 'FAKE'
+                    ? 'bg-rose-600 animate-pulse'
                     : evaluationResult.statusType === 'VERIFIED'
-                    ? 'bg-emerald-600'
-                    : 'bg-amber-600'
+                    ? 'bg-emerald-600 animate-pulse'
+                    : 'bg-amber-600 animate-pulse'
                 }`}
               />
               <span
                 className={
-                  evaluationResult.statusType === 'FAKE'
+                  !hasEvaluated
+                    ? 'text-slate-600'
+                    : evaluationResult.statusType === 'FAKE'
                     ? 'text-rose-600'
                     : evaluationResult.statusType === 'VERIFIED'
                     ? 'text-emerald-700'
                     : 'text-amber-700'
                 }
               >
-                {evaluationResult.statusType === 'FAKE'
+                {!hasEvaluated
+                  ? 'TRẠNG THÁI: HỆ THỐNG SẴN SÀNG KIỂM CHỨNG'
+                  : evaluationResult.statusType === 'FAKE'
                   ? 'KẾT LUẬN: CẢNH BÁO TIN SAI LỆCH (TIN GIẢ)'
                   : evaluationResult.statusType === 'VERIFIED'
                   ? 'KẾT LUẬN: THÔNG TIN XÁC THỰC (TIN THẬT)'
@@ -565,47 +570,53 @@ export const VerificationXaiPage: React.FC = () => {
                 <div className="flex items-baseline gap-2">
                   <span
                     className={`text-4xl font-black tracking-tight ${
-                      evaluationResult.statusType === 'FAKE'
+                      !hasEvaluated
+                        ? 'text-slate-400'
+                        : evaluationResult.statusType === 'FAKE'
                         ? 'text-rose-600'
                         : evaluationResult.statusType === 'VERIFIED'
                         ? 'text-emerald-700'
                         : 'text-amber-600'
                     }`}
                   >
-                    {evaluationResult.verdictScore}%
+                    {!hasEvaluated ? '--%' : `${evaluationResult.verdictScore}%`}
                   </span>
                   <span className="text-sm font-extrabold text-slate-900">
-                    {evaluationResult.verdictLabel}
+                    {!hasEvaluated ? 'Chờ nhập dữ liệu' : evaluationResult.verdictLabel}
                   </span>
                 </div>
               </div>
               <p className="text-xs text-slate-600 max-w-xs leading-relaxed">
-                {evaluationResult.verdictSummary}
+                {!hasEvaluated
+                  ? 'Vui lòng nhập hoặc dán nội dung văn bản bên trái rồi nhấn "Kiểm chứng ngay" để hệ thống đối soát RAG và phân tích Deep Learning.'
+                  : evaluationResult.verdictSummary}
               </p>
             </div>
 
             {/* Direct Bridge to Propagation Analysis */}
-            <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] text-slate-500 font-medium">
-                Dữ liệu kiểm chứng đã sẵn sàng để mô phỏng động lực học lan truyền.
-              </span>
-              <button
-                onClick={() =>
-                  navigate('/lan-truyen', {
-                    state: {
-                      topic: inputText.trim(),
-                      fromAnalysis: true,
-                      statusType: evaluationResult.statusType,
-                      verdictLabel: evaluationResult.verdictLabel,
-                    },
-                  })
-                }
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Chuyển sang Phân tích Lan truyền (GNN / SEIR) ➔</span>
-              </button>
-            </div>
+            {hasEvaluated && (
+              <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Dữ liệu kiểm chứng đã sẵn sàng để mô phỏng động lực học lan truyền.
+                </span>
+                <button
+                  onClick={() =>
+                    navigate('/lan-truyen', {
+                      state: {
+                        topic: inputText.trim(),
+                        fromAnalysis: true,
+                        statusType: evaluationResult.statusType,
+                        verdictLabel: evaluationResult.verdictLabel,
+                      },
+                    })
+                  }
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Chuyển sang Phân tích Lan truyền (GNN / SEIR) ➔</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Box 2: 3. Từ ngữ kích động & thổi phồng (Đồng bộ trực tiếp với văn bản người dùng) */}
@@ -623,23 +634,25 @@ export const VerificationXaiPage: React.FC = () => {
             {renderDynamicHighlightedText()}
 
             {/* Token Attribution Breakdown Table */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
-              {evaluationResult.tokens.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
-                >
-                  <span className="font-bold text-slate-900">"{item.word}"</span>
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
-                    }`}
+            {hasEvaluated && evaluationResult.tokens.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
+                {evaluationResult.tokens.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
                   >
-                    {item.meaning}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className="font-bold text-slate-900">"{item.word}"</span>
+                    <span
+                      className={`text-[11px] font-semibold ${
+                        evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
+                      }`}
+                    >
+                      {item.meaning}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Box 3: 4. Kiểm tra cắt ghép hình ảnh (Vision Transformer ViT) */}
