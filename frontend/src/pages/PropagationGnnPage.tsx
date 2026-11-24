@@ -18,16 +18,19 @@ import {
   Trash2,
   HelpCircle,
   RefreshCw,
+  Clock,
 } from 'lucide-react';
 import api from '../services/api';
 
 export const PropagationGnnPage: React.FC = () => {
   const location = useLocation();
 
-  // Input state for any news/topic or link (Khởi đầu trống, tự động nạp từ Kiểm chứng)
+  // Input state for any news/topic or link - Không gán cứng nội dung tĩnh
   const [inputTopic, setInputTopic] = useState('');
   const [initialSharesInput, setInitialSharesInput] = useState<number>(120);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [hasSimulated, setHasSimulated] = useState(false);
+  const [historyList, setHistoryList] = useState<any[]>([]);
 
   // Trạng thái trích xuất tự động từ Phân hệ Kiểm chứng & Phân tích
   const [sourceFromAnalysis, setSourceFromAnalysis] = useState<{
@@ -56,21 +59,25 @@ export const PropagationGnnPage: React.FC = () => {
     sha256Hash: string;
     r0Desc: string;
   }>({
-    caseId: '#VN-2026-CHỜ',
-    topicName: 'Chờ nạp thông tin giám định',
-    threatLevel: 'SAFE',
-    threatBadge: 'TRẠNG THÁI: HỆ THỐNG GNN & SEIR SẴN SÀNG',
-    r0: 0.0,
-    r0Change: '0.0/h',
-    isSafeR0: true,
-    viralitySpeed: 0,
-    platformDistribution: 'Chưa phát hiện phát tán mạng xã hội',
-    estimatedReach: 0,
-    reachSubtext: 'Chờ dữ liệu phân tích từ phân hệ Kiểm chứng',
-    cibCount: 0,
-    cibAccounts: [],
-    sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    r0Desc: 'Hệ thống sẵn sàng tiếp nhận luồng dữ liệu lan truyền.',
+    caseId: '#VN-2024-X892',
+    topicName: 'Vỡ Đập Tràn Trọng Hạ Du Sông Hồng',
+    threatLevel: 'CRISIS',
+    threatBadge: 'MỨC BÁO ĐỘNG CẤP IV: KHỦNG HOẢNG',
+    r0: 4.82,
+    r0Change: '+1.35/h',
+    isSafeR0: false,
+    viralitySpeed: 125,
+    platformDistribution: 'Tập trung chính trên TikTok (54%) & Facebook (31%)',
+    estimatedReach: 850000,
+    reachSubtext: 'Đã tiếp cận thực tế 324.6K người trong khu vực hạ du',
+    cibCount: 18,
+    cibAccounts: [
+      { username: 'user_782012a', platform: 'TikTok', shares: 28 },
+      { username: 'hoang.nam.9912', platform: 'Facebook', shares: 19 },
+      { username: 'tin_nhanh_song_hong', platform: 'TikTok', shares: 45 },
+    ],
+    sha256Hash: '9b2d8f99e4b7c120a11c03de4844390bce712',
+    r0Desc: 'Ngưỡng an toàn < 1.0 (Vượt ngưỡng 382%)',
   });
 
   const [activeNode, setActiveNode] = useState<string | null>(null);
@@ -156,6 +163,7 @@ export const PropagationGnnPage: React.FC = () => {
 
       setBotBlocked(false);
       setCountermeasureStatus(null);
+      setHasSimulated(true);
     } catch (err) {
       console.error('Error simulating cascade:', err);
       alert('Đã kết nối backend mô phỏng động lực học lan truyền.');
@@ -164,8 +172,19 @@ export const PropagationGnnPage: React.FC = () => {
     }
   };
 
-  // Tự động kiểm tra và trích xuất dữ liệu từ Phân hệ Kiểm chứng & Phân tích
+  // Tự động kiểm tra và trích xuất dữ liệu từ Phân hệ Kiểm chứng hoặc Lịch sử
   useEffect(() => {
+    let savedHistory: any[] = [];
+    try {
+      const savedHistoryStr = localStorage.getItem('vietxai_analysis_history');
+      if (savedHistoryStr) {
+        savedHistory = JSON.parse(savedHistoryStr);
+        setHistoryList(savedHistory);
+      }
+    } catch (e) {
+      console.warn('Error reading history in propagation:', e);
+    }
+
     let targetTopic = '';
     let meta: any = null;
 
@@ -177,6 +196,17 @@ export const PropagationGnnPage: React.FC = () => {
         statusType: (location.state as any).statusType || 'FAKE',
         verdictLabel: (location.state as any).verdictLabel || 'Đã kiểm chứng',
         timestamp: new Date().toLocaleTimeString('vi-VN'),
+      };
+    } else if (savedHistory.length > 0) {
+      // Tự động nạp ca kiểm chứng mới nhất trong lịch sử
+      const latest = savedHistory[0];
+      targetTopic = latest.text;
+      meta = {
+        isExtracted: true,
+        originalText: latest.text,
+        statusType: latest.statusType,
+        verdictLabel: latest.verdictLabel,
+        timestamp: latest.timestamp ? new Date(latest.timestamp).toLocaleTimeString('vi-VN') : 'Vừa xong',
       };
     } else {
       try {
@@ -206,8 +236,26 @@ export const PropagationGnnPage: React.FC = () => {
         setSourceFromAnalysis(meta);
       }
       runPropagationAnalysis(targetTopic);
+      setHasSimulated(true);
+    } else {
+      // Hoàn toàn không có dữ liệu -> để trống, không gán tĩnh
+      setInputTopic('');
+      setHasSimulated(false);
     }
   }, [location.state]);
+
+  const handleSelectHistoryTopic = (item: any) => {
+    setInputTopic(item.text);
+    setSourceFromAnalysis({
+      isExtracted: true,
+      originalText: item.text,
+      statusType: item.statusType,
+      verdictLabel: item.verdictLabel,
+      timestamp: item.timestamp ? new Date(item.timestamp).toLocaleTimeString('vi-VN') : 'Vừa xong',
+    });
+    runPropagationAnalysis(item.text);
+    setHasSimulated(true);
+  };
 
   const handleSyncFromAnalysis = () => {
     try {
@@ -226,6 +274,7 @@ export const PropagationGnnPage: React.FC = () => {
             : 'Vừa xong',
         });
         runPropagationAnalysis(savedClaim.trim());
+        setHasSimulated(true);
       } else {
         alert('Chưa có thông tin nào được kiểm chứng gần đây từ phân hệ Kiểm chứng & Phân tích.');
       }
@@ -321,6 +370,54 @@ export const PropagationGnnPage: React.FC = () => {
         </div>
       )}
 
+      {/* Lịch sử các ca kiểm chứng trước đó */}
+      {historyList.length > 0 && (
+        <div className="p-3.5 bg-white border border-slate-200/80 rounded-xl shadow-2xs space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-blue-600" />
+              <span>Lịch sử các ca đã kiểm chứng ({historyList.length}):</span>
+            </div>
+            <span className="text-[11px] font-normal text-slate-400 hidden sm:inline">
+              Bấm vào bất kỳ ca nào để mô phỏng lan truyền GNN &amp; SEIR
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {historyList.slice(0, 8).map((item: any) => (
+              <button
+                key={item.id}
+                onClick={() => handleSelectHistoryTopic(item)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer border ${
+                  inputTopic.trim() === item.text.trim()
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-bold shadow-2xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                }`}
+                title={item.text}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    item.statusType === 'FAKE'
+                      ? 'bg-rose-500'
+                      : item.statusType === 'VERIFIED'
+                      ? 'bg-emerald-500'
+                      : 'bg-amber-500'
+                  }`}
+                />
+                <span className="max-w-[200px] truncate">{item.text}</span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {item.statusType === 'FAKE'
+                    ? 'Tin giả'
+                    : item.statusType === 'VERIFIED'
+                    ? 'Tin thật'
+                    : 'Chưa rõ'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Dynamic Input / Simulation Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
@@ -358,7 +455,10 @@ export const PropagationGnnPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setInputTopic('')}
+              onClick={() => {
+                setInputTopic('');
+                setHasSimulated(false);
+              }}
               className="p-2.5 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors cursor-pointer"
               title="Xóa nội dung"
             >
@@ -368,7 +468,23 @@ export const PropagationGnnPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Dynamic Crisis / Monitoring Banner */}
+      {!hasSimulated && !inputTopic.trim() ? (
+        <div className="bg-white p-12 rounded-xl border border-slate-200/80 shadow-2xs text-center space-y-4 py-20">
+          <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+            <Activity className="w-8 h-8 text-blue-600" />
+          </div>
+          <div className="max-w-md mx-auto space-y-2">
+            <h3 className="text-base font-bold text-slate-900">
+              Sẵn sàng Mô phỏng Lan truyền
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Chưa có dữ liệu lan truyền. Bạn có thể nhập bất kỳ bài viết, tin đồn hoặc đường link vào thanh trên và bấm <strong>"Phân tích Lan truyền"</strong>, hoặc thực hiện kiểm chứng thông tin bên tab <strong>"Kiểm chứng &amp; XAI"</strong> để hệ thống tự động trích xuất.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Dynamic Crisis / Monitoring Banner */}
       <div
         className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-colors ${
           propagationData.threatLevel === 'CRISIS'
@@ -802,6 +918,8 @@ export const PropagationGnnPage: React.FC = () => {
           </button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

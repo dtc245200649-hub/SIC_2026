@@ -17,16 +17,41 @@ import {
   Database,
   Trash2,
   Share2,
+  Clock,
   Image as ImageIcon,
 } from 'lucide-react';
 import api from '../services/api';
+
+export interface VerificationHistoryItem {
+  id: string;
+  text: string;
+  statusType: 'FAKE' | 'VERIFIED' | 'UNVERIFIED';
+  verdictLabel: string;
+  verdictScore: number;
+  verdictSummary: string;
+  tokens: Array<{ word: string; meaning: string; isFake: boolean }>;
+  matchedEvidences: Array<{
+    id: number;
+    title: string;
+    url: string;
+    snippet: string;
+    source_name: string;
+    source_domain: string;
+    published_date: string;
+    similarity_score: number;
+    nli_verdict: string;
+  }>;
+  gradcamConclusion: string;
+  crossModalInconsistency: number;
+  timestamp: string;
+}
 
 export const VerificationXaiPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // User input states (Bắt đầu với ô nhập trống - hoàn toàn động)
+  // User input states - Không gán cứng nội dung tĩnh
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageMeta, setImageMeta] = useState<{
@@ -36,6 +61,7 @@ export const VerificationXaiPage: React.FC = () => {
   }>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasEvaluated, setHasEvaluated] = useState(false);
+  const [historyList, setHistoryList] = useState<VerificationHistoryItem[]>([]);
 
   // Dynamic evaluation result states
   const [evaluationResult, setEvaluationResult] = useState<{
@@ -61,22 +87,90 @@ export const VerificationXaiPage: React.FC = () => {
     statusType: 'UNVERIFIED',
     verdictLabel: 'Sẵn sàng kiểm chứng',
     verdictScore: 0,
-    verdictSummary:
-      'Hệ thống AI PhoBERT v2 và Kho Tri thức 1,210+ bài báo đã sẵn sàng. Vui lòng nhập hoặc dán nội dung cần kiểm chứng vào ô bên trái.',
+    verdictSummary: 'Nhập nội dung văn bản để hệ thống bắt đầu giám định đa phương thức.',
     tokens: [],
     matchedEvidences: [],
-    gradcamConclusion: 'Chờ tải lên tệp hình ảnh để quét các vùng biến đổi Grad-CAM.',
+    gradcamConclusion: 'Chờ ảnh đính kèm để phân tích Vision Transformer.',
     crossModalInconsistency: 0,
   });
 
-  // Handle incoming text from OverviewPage or SocialRadarPage
+  // Tải lịch sử kiểm chứng hoặc thông tin mới nhất từ LocalStorage
   useEffect(() => {
+    let savedHistory: VerificationHistoryItem[] = [];
+    try {
+      const savedHistoryStr = localStorage.getItem('vietxai_analysis_history');
+      if (savedHistoryStr) {
+        savedHistory = JSON.parse(savedHistoryStr);
+        setHistoryList(savedHistory);
+      }
+    } catch (e) {
+      console.warn('Error reading history:', e);
+    }
+
     if (location.state && (location.state as any).text) {
       const incomingText = (location.state as any).text;
       setInputText(incomingText);
       runEvaluation(incomingText);
+    } else if (savedHistory.length > 0) {
+      // Khi có lịch sử trước đó -> Tự động nạp thông tin mới nhất vừa kiểm chứng
+      const latest = savedHistory[0];
+      setInputText(latest.text);
+      setEvaluationResult({
+        statusType: latest.statusType,
+        verdictLabel: latest.verdictLabel,
+        verdictScore: latest.verdictScore,
+        verdictSummary: latest.verdictSummary,
+        tokens: latest.tokens || [],
+        matchedEvidences: latest.matchedEvidences || [],
+        gradcamConclusion: latest.gradcamConclusion || 'Hình ảnh mang cấu trúc tự nhiên.',
+        crossModalInconsistency: latest.crossModalInconsistency || 0.5,
+      });
+      setHasEvaluated(true);
+    } else {
+      // Nếu hoàn toàn chưa có lịch sử -> để trống, không gán tĩnh
+      setInputText('');
+      setHasEvaluated(false);
     }
   }, [location.state]);
+
+  const handleSelectHistoryItem = (item: VerificationHistoryItem) => {
+    setInputText(item.text);
+    setEvaluationResult({
+      statusType: item.statusType,
+      verdictLabel: item.verdictLabel,
+      verdictScore: item.verdictScore,
+      verdictSummary: item.verdictSummary,
+      tokens: item.tokens || [],
+      matchedEvidences: item.matchedEvidences || [],
+      gradcamConclusion: item.gradcamConclusion || 'Hình ảnh mang cấu trúc tự nhiên.',
+      crossModalInconsistency: item.crossModalInconsistency || 0.5,
+    });
+    setHasEvaluated(true);
+    try {
+      localStorage.setItem('vietxai_latest_analyzed_claim', item.text);
+      localStorage.setItem(
+        'vietxai_latest_analyzed_meta',
+        JSON.stringify({
+          text: item.text,
+          statusType: item.statusType,
+          verdictLabel: item.verdictLabel,
+          verdictScore: item.verdictScore,
+          timestamp: item.timestamp,
+        })
+      );
+    } catch (e) {}
+  };
+
+  const handleClearHistory = () => {
+    if (window.confirm('Bạn có chắc muốn xóa lịch sử kiểm chứng trước đó không?')) {
+      localStorage.removeItem('vietxai_analysis_history');
+      localStorage.removeItem('vietxai_latest_analyzed_claim');
+      localStorage.removeItem('vietxai_latest_analyzed_meta');
+      setHistoryList([]);
+      setInputText('');
+      setHasEvaluated(false);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -96,17 +190,6 @@ export const VerificationXaiPage: React.FC = () => {
     setSelectedImage(null);
     setImageMeta({});
     setHasEvaluated(false);
-    setEvaluationResult({
-      statusType: 'UNVERIFIED',
-      verdictLabel: 'Sẵn sàng kiểm chứng',
-      verdictScore: 0,
-      verdictSummary:
-        'Hệ thống AI PhoBERT v2 và Kho Tri thức 1,210+ bài báo đã sẵn sàng. Vui lòng nhập hoặc dán nội dung cần kiểm chứng vào ô bên trái.',
-      tokens: [],
-      matchedEvidences: [],
-      gradcamConclusion: 'Chờ tải lên tệp hình ảnh để quét các vùng biến đổi Grad-CAM.',
-      crossModalInconsistency: 0,
-    });
   };
 
   // Run dynamic evaluation using PhoBERT v2 & Vector RAG (1,210 articles)
@@ -198,7 +281,7 @@ export const VerificationXaiPage: React.FC = () => {
         }));
       }
 
-      setEvaluationResult({
+      const evaluatedResultData = {
         statusType: finalStatus,
         verdictLabel: finalLabel,
         verdictScore: finalStatus === 'UNVERIFIED' ? 62 : confPct,
@@ -211,10 +294,13 @@ export const VerificationXaiPage: React.FC = () => {
             ? 'Khung hình có dấu hiệu can thiệp thị giác hoặc sai lệch mốc thời gian sự kiện.'
             : 'Hình ảnh mang cấu trúc tự nhiên, không phát hiện dấu vết cắt ghép thô bạo.'),
         crossModalInconsistency: resData.cross_modal_inconsistency || 0.65,
-      });
+      };
 
-      // Tự động đồng bộ hóa thông tin kiểm chứng sang Phân hệ Lan truyền (GNN & SEIR)
+      setEvaluationResult(evaluatedResultData);
+
+      // Tự động đồng bộ hóa thông tin kiểm chứng và cập nhật Lịch sử (Storage & State)
       try {
+        const timestampIso = new Date().toISOString();
         localStorage.setItem('vietxai_latest_analyzed_claim', text.trim());
         localStorage.setItem(
           'vietxai_latest_analyzed_meta',
@@ -223,9 +309,38 @@ export const VerificationXaiPage: React.FC = () => {
             statusType: finalStatus,
             verdictLabel: finalLabel,
             verdictScore: finalStatus === 'UNVERIFIED' ? 62 : confPct,
-            timestamp: new Date().toISOString(),
+            timestamp: timestampIso,
           })
         );
+
+        // Cập nhật danh sách lịch sử
+        let currentHistory: VerificationHistoryItem[] = [];
+        const savedHistoryStr = localStorage.getItem('vietxai_analysis_history');
+        if (savedHistoryStr) {
+          try {
+            currentHistory = JSON.parse(savedHistoryStr);
+          } catch (e) {}
+        }
+
+        // Lọc trùng theo nội dung
+        currentHistory = currentHistory.filter(
+          (h) => h.text.trim().toLowerCase() !== text.trim().toLowerCase()
+        );
+
+        const newHistoryItem: VerificationHistoryItem = {
+          id: Date.now().toString(),
+          text: text.trim(),
+          ...evaluatedResultData,
+          timestamp: timestampIso,
+        };
+
+        currentHistory.unshift(newHistoryItem);
+        if (currentHistory.length > 20) {
+          currentHistory = currentHistory.slice(0, 20);
+        }
+
+        localStorage.setItem('vietxai_analysis_history', JSON.stringify(currentHistory));
+        setHistoryList(currentHistory);
       } catch (e) {
         console.warn('Sync storage error:', e);
       }
@@ -247,13 +362,7 @@ export const VerificationXaiPage: React.FC = () => {
 
   // Helper: Tô màu động trực tiếp trên đoạn văn bản đang kiểm chứng
   const renderDynamicHighlightedText = () => {
-    if (!inputText.trim() || !hasEvaluated) {
-      return (
-        <div className="p-6 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-          Chưa có nội dung kiểm chứng. Vui lòng nhập văn bản ở ô số 1 bên trái và nhấn "Kiểm chứng ngay" để hiển thị phân tích XAI SHAP Attribution.
-        </div>
-      );
-    }
+    if (!inputText) return null;
 
     const keywords = evaluationResult.tokens.map((t) => t.word.toLowerCase());
     const words = inputText.split(/(\s+)/);
@@ -345,6 +454,57 @@ export const VerificationXaiPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Lịch sử kiểm chứng trước đó (chỉ hiển thị khi có lịch sử thực tế của người dùng) */}
+      {historyList.length > 0 && (
+        <div className="p-3.5 bg-white border border-slate-200/80 rounded-xl shadow-2xs space-y-2.5">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-slate-700">
+              <Clock className="w-3.5 h-3.5 text-blue-600" />
+              <span>Lịch sử kiểm chứng trước đó ({historyList.length}):</span>
+            </div>
+            <button
+              onClick={handleClearHistory}
+              className="text-[11px] font-semibold text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+            >
+              Xóa lịch sử
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {historyList.slice(0, 8).map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleSelectHistoryItem(item)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer border ${
+                  inputText.trim() === item.text.trim()
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-bold shadow-2xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                }`}
+                title={item.text}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    item.statusType === 'FAKE'
+                      ? 'bg-rose-500'
+                      : item.statusType === 'VERIFIED'
+                      ? 'bg-emerald-500'
+                      : 'bg-amber-500'
+                  }`}
+                />
+                <span className="max-w-[220px] truncate">{item.text}</span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {item.statusType === 'FAKE'
+                    ? 'Tin giả'
+                    : item.statusType === 'VERIFIED'
+                    ? 'Tin thật'
+                    : 'Chưa rõ'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main Grid: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -452,8 +612,12 @@ export const VerificationXaiPage: React.FC = () => {
 
             {/* Render Matched Evidence Articles */}
             {!hasEvaluated ? (
-              <div className="p-6 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-                Hệ thống sẵn sàng đối soát với 1,210+ bài báo chính thống. Nhập nội dung cần kiểm chứng bên trên và nhấn "Kiểm chứng ngay".
+              <div className="p-6 rounded-xl bg-slate-50/70 border border-slate-200/80 text-center text-xs text-slate-500 py-8 space-y-2">
+                <Database className="w-6 h-6 text-slate-400 mx-auto" />
+                <p className="font-semibold text-slate-700">Kho Tri thức sẵn sàng đối soát 1,210+ bài báo chính thống</p>
+                <p className="text-[11px] text-slate-400">
+                  Nhập nội dung bên trên và bấm "Kiểm chứng ngay" để hệ thống tự động tìm kiếm căn cứ báo chí đối chiếu.
+                </p>
               </div>
             ) : evaluationResult.matchedEvidences.length > 0 ? (
               <div className="space-y-3">
@@ -530,34 +694,44 @@ export const VerificationXaiPage: React.FC = () => {
 
         {/* RIGHT COLUMN: AI Verdict & SHAP Attribution & ViT Heatmap (6/12) */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Box 1: KẾT LUẬN TỔNG HỢP (Tin Thật / Tin Giả / Chưa Đủ Dẫn Chứng) */}
+          {!hasEvaluated ? (
+            <div className="bg-white p-8 rounded-xl border border-slate-200/80 shadow-2xs text-center space-y-4 py-20">
+              <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Search className="w-8 h-8 text-blue-600" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-base font-bold text-slate-900">
+                  Sẵn sàng Tiếp nhận Giám định
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Hiện chưa có dữ liệu giám định. Vui lòng nhập nội dung văn bản bên trái và bấm <strong>"Kiểm chứng ngay"</strong> hoặc nhấp chọn một ca trong lịch sử để hệ thống phân định Tin thật, Tin giả hay Chưa đủ dẫn chứng.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Box 1: KẾT LUẬN TỔNG HỢP (Tin Thật / Tin Giả / Chưa Đủ Dẫn Chứng) */}
           <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide mb-2">
               <span
-                className={`w-2 h-2 rounded-full ${
-                  !hasEvaluated
-                    ? 'bg-slate-400'
-                    : evaluationResult.statusType === 'FAKE'
-                    ? 'bg-rose-600 animate-pulse'
+                className={`w-2 h-2 rounded-full animate-pulse ${
+                  evaluationResult.statusType === 'FAKE'
+                    ? 'bg-rose-600'
                     : evaluationResult.statusType === 'VERIFIED'
-                    ? 'bg-emerald-600 animate-pulse'
-                    : 'bg-amber-600 animate-pulse'
+                    ? 'bg-emerald-600'
+                    : 'bg-amber-600'
                 }`}
               />
               <span
                 className={
-                  !hasEvaluated
-                    ? 'text-slate-600'
-                    : evaluationResult.statusType === 'FAKE'
+                  evaluationResult.statusType === 'FAKE'
                     ? 'text-rose-600'
                     : evaluationResult.statusType === 'VERIFIED'
                     ? 'text-emerald-700'
                     : 'text-amber-700'
                 }
               >
-                {!hasEvaluated
-                  ? 'TRẠNG THÁI: HỆ THỐNG SẴN SÀNG KIỂM CHỨNG'
-                  : evaluationResult.statusType === 'FAKE'
+                {evaluationResult.statusType === 'FAKE'
                   ? 'KẾT LUẬN: CẢNH BÁO TIN SAI LỆCH (TIN GIẢ)'
                   : evaluationResult.statusType === 'VERIFIED'
                   ? 'KẾT LUẬN: THÔNG TIN XÁC THỰC (TIN THẬT)'
@@ -570,53 +744,47 @@ export const VerificationXaiPage: React.FC = () => {
                 <div className="flex items-baseline gap-2">
                   <span
                     className={`text-4xl font-black tracking-tight ${
-                      !hasEvaluated
-                        ? 'text-slate-400'
-                        : evaluationResult.statusType === 'FAKE'
+                      evaluationResult.statusType === 'FAKE'
                         ? 'text-rose-600'
                         : evaluationResult.statusType === 'VERIFIED'
                         ? 'text-emerald-700'
                         : 'text-amber-600'
                     }`}
                   >
-                    {!hasEvaluated ? '--%' : `${evaluationResult.verdictScore}%`}
+                    {evaluationResult.verdictScore}%
                   </span>
                   <span className="text-sm font-extrabold text-slate-900">
-                    {!hasEvaluated ? 'Chờ nhập dữ liệu' : evaluationResult.verdictLabel}
+                    {evaluationResult.verdictLabel}
                   </span>
                 </div>
               </div>
               <p className="text-xs text-slate-600 max-w-xs leading-relaxed">
-                {!hasEvaluated
-                  ? 'Vui lòng nhập hoặc dán nội dung văn bản bên trái rồi nhấn "Kiểm chứng ngay" để hệ thống đối soát RAG và phân tích Deep Learning.'
-                  : evaluationResult.verdictSummary}
+                {evaluationResult.verdictSummary}
               </p>
             </div>
 
             {/* Direct Bridge to Propagation Analysis */}
-            {hasEvaluated && (
-              <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Dữ liệu kiểm chứng đã sẵn sàng để mô phỏng động lực học lan truyền.
-                </span>
-                <button
-                  onClick={() =>
-                    navigate('/lan-truyen', {
-                      state: {
-                        topic: inputText.trim(),
-                        fromAnalysis: true,
-                        statusType: evaluationResult.statusType,
-                        verdictLabel: evaluationResult.verdictLabel,
-                      },
-                    })
-                  }
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>Chuyển sang Phân tích Lan truyền (GNN / SEIR) ➔</span>
-                </button>
-              </div>
-            )}
+            <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] text-slate-500 font-medium">
+                Dữ liệu kiểm chứng đã sẵn sàng để mô phỏng động lực học lan truyền.
+              </span>
+              <button
+                onClick={() =>
+                  navigate('/lan-truyen', {
+                    state: {
+                      topic: inputText.trim(),
+                      fromAnalysis: true,
+                      statusType: evaluationResult.statusType,
+                      verdictLabel: evaluationResult.verdictLabel,
+                    },
+                  })
+                }
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Chuyển sang Phân tích Lan truyền (GNN / SEIR) ➔</span>
+              </button>
+            </div>
           </div>
 
           {/* Box 2: 3. Từ ngữ kích động & thổi phồng (Đồng bộ trực tiếp với văn bản người dùng) */}
@@ -634,25 +802,23 @@ export const VerificationXaiPage: React.FC = () => {
             {renderDynamicHighlightedText()}
 
             {/* Token Attribution Breakdown Table */}
-            {hasEvaluated && evaluationResult.tokens.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
-                {evaluationResult.tokens.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
+              {evaluationResult.tokens.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
+                >
+                  <span className="font-bold text-slate-900">"{item.word}"</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
+                    }`}
                   >
-                    <span className="font-bold text-slate-900">"{item.word}"</span>
-                    <span
-                      className={`text-[11px] font-semibold ${
-                        evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
-                      }`}
-                    >
-                      {item.meaning}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                    {item.meaning}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Box 3: 4. Kiểm tra cắt ghép hình ảnh (Vision Transformer ViT) */}
@@ -715,6 +881,8 @@ export const VerificationXaiPage: React.FC = () => {
               </button>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
