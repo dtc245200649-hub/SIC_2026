@@ -29,39 +29,15 @@ def seed_initial_data(db: Session) -> None:
             db.flush()
         role_objs[r["name"]] = existing_role
 
-    # 2. Danh sách tài khoản mẫu mặc định
+    # 2. Danh sách tài khoản quản trị viên duy nhất
     users_data = [
         {
-            "username": "admin",
-            "email": "admin@sic.edu.vn",
+            "username": "phequan23",
+            "email": "phequan@gmail.com",
             "full_name": "Quản Trị Viên Hệ Thống",
-            "password": "AdminPassword123!",
+            "password": "Admin@123456",
             "is_superuser": True,
-            "roles": [role_objs["Admin"], role_objs["Researcher"]],
-        },
-        {
-            "username": "researcher",
-            "email": "researcher@sic.edu.vn",
-            "full_name": "Nguyễn Văn Nghiên Cứu",
-            "password": "ResearcherPassword123!",
-            "is_superuser": False,
-            "roles": [role_objs["Researcher"]],
-        },
-        {
-            "username": "analyst",
-            "email": "analyst@sic.edu.vn",
-            "full_name": "Trần Thị Phân Tích",
-            "password": "AnalystPassword123!",
-            "is_superuser": False,
-            "roles": [role_objs["Analyst"]],
-        },
-        {
-            "username": "test_lock",
-            "email": "test_lock@sic.edu.vn",
-            "full_name": "Tài Khoản Test Khóa 15 Phút",
-            "password": "Password123!",
-            "is_superuser": False,
-            "roles": [role_objs["Analyst"]],
+            "roles": [role_objs["Admin"], role_objs["Analyst"]],
         },
     ]
 
