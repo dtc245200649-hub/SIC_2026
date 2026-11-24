@@ -19,6 +19,7 @@ import {
   HelpCircle,
   RefreshCw,
   Clock,
+  ExternalLink,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -143,8 +144,8 @@ export const PropagationGnnPage: React.FC = () => {
         threatBadge: isCritical
           ? 'MỨC BÁO ĐỘNG CẤP IV: KHỦNG HOẢNG'
           : isWarning
-          ? 'MỨC BÁO ĐỘNG CẤP III: NGUY CƠ BÙNG PHÁT'
-          : 'MỨC BÁO ĐỘNG CẤP I: NGƯỠNG AN TOÀN / TỰ DẬP TẮT',
+            ? 'MỨC BÁO ĐỘNG CẤP III: NGUY CƠ BÙNG PHÁT'
+            : 'MỨC BÁO ĐỘNG CẤP I: NGƯỠNG AN TOÀN / TỰ DẬP TẮT',
         r0: r0Val,
         r0Change: r0Val >= 1.0 ? `+${(r0Val * 0.28).toFixed(2)}/h` : `-0.35/h`,
         isSafeR0: r0Val < 1.0,
@@ -331,13 +332,12 @@ export const PropagationGnnPage: React.FC = () => {
                   Tự động trích xuất thông tin từ Phân hệ Kiểm chứng &amp; Giải thích
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                    sourceFromAnalysis.statusType === 'FAKE'
-                      ? 'bg-rose-100 text-rose-800 border-rose-300'
-                      : sourceFromAnalysis.statusType === 'VERIFIED'
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${sourceFromAnalysis.statusType === 'FAKE'
+                    ? 'bg-rose-100 text-rose-800 border-rose-300'
+                    : sourceFromAnalysis.statusType === 'VERIFIED'
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : 'bg-amber-100 text-amber-800 border-amber-300'
-                  }`}
+                    }`}
                 >
                   {sourceFromAnalysis.verdictLabel || 'Đã kiểm chứng'}
                 </span>
@@ -466,6 +466,15 @@ export const PropagationGnnPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {inputTopic.trim().startsWith('http') && (
+          <div className="px-3 py-1.5 rounded-lg bg-sky-50 border border-sky-200/80 text-sky-900 text-xs font-medium flex items-center gap-2">
+            <ExternalLink className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <span>
+              Phát hiện liên kết bài báo/website: Hệ thống sẽ tự động bóc tách tiêu đề và mô tả để tính toán các chỉ số lan truyền.
+            </span>
+          </div>
+        )}
       </div>
 
       {!hasSimulated && !inputTopic.trim() ? (
@@ -486,23 +495,21 @@ export const PropagationGnnPage: React.FC = () => {
         <>
           {/* Dynamic Crisis / Monitoring Banner */}
       <div
-        className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-colors ${
-          propagationData.threatLevel === 'CRISIS'
-            ? 'bg-rose-50/80 border-rose-200/80'
-            : propagationData.threatLevel === 'WARNING'
+        className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-colors ${propagationData.threatLevel === 'CRISIS'
+          ? 'bg-rose-50/80 border-rose-200/80'
+          : propagationData.threatLevel === 'WARNING'
             ? 'bg-amber-50/80 border-amber-200/80'
             : 'bg-emerald-50/80 border-emerald-200/80'
-        }`}
+          }`}
       >
         <div className="flex items-center gap-2">
           <span
-            className={`font-extrabold uppercase tracking-wide ${
-              propagationData.threatLevel === 'CRISIS'
-                ? 'text-rose-700'
-                : propagationData.threatLevel === 'WARNING'
+            className={`font-extrabold uppercase tracking-wide ${propagationData.threatLevel === 'CRISIS'
+              ? 'text-rose-700'
+              : propagationData.threatLevel === 'WARNING'
                 ? 'text-amber-800'
                 : 'text-emerald-700'
-            }`}
+              }`}
           >
             {propagationData.threatBadge}
           </span>
@@ -549,27 +556,24 @@ export const PropagationGnnPage: React.FC = () => {
               Hệ số lây nhiễm R₀
             </span>
             <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                propagationData.isSafeR0
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border-rose-200/60'
-              }`}
+              className={`text-[11px] font-bold px-2 py-0.5 rounded border ${propagationData.isSafeR0
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-rose-50 text-rose-700 border-rose-200/60'
+                }`}
             >
               {propagationData.isSafeR0 ? 'Ngưỡng an toàn' : 'Cảnh báo đỏ'}
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
             <span
-              className={`text-3xl font-black tracking-tight ${
-                propagationData.isSafeR0 ? 'text-emerald-600' : 'text-rose-600'
-              }`}
+              className={`text-3xl font-black tracking-tight ${propagationData.isSafeR0 ? 'text-emerald-600' : 'text-rose-600'
+                }`}
             >
               {propagationData.r0.toFixed(2)}
             </span>
             <span
-              className={`text-xs font-bold ${
-                propagationData.isSafeR0 ? 'text-emerald-600' : 'text-rose-600'
-              }`}
+              className={`text-xs font-bold ${propagationData.isSafeR0 ? 'text-emerald-600' : 'text-rose-600'
+                }`}
             >
               {propagationData.r0Change}
             </span>

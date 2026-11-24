@@ -321,7 +321,18 @@ class VectorRAGService:
             cls.build_index(db=db)
             index_data = cls._index_cache
 
-        clean_claim = claim.strip()
+        # Tự động trích xuất nội dung nếu claim là URL
+        raw_claim = claim.strip()
+        if raw_claim.startswith(("http://", "https://")):
+            try:
+                from app.services.social_scraper import social_scraper
+                extracted = social_scraper.extract_url_content(raw_claim)
+                clean_claim = extracted if extracted and len(extracted) > 5 else raw_claim
+            except Exception:
+                clean_claim = raw_claim
+        else:
+            clean_claim = raw_claim
+
         if not clean_claim:
             return []
 

@@ -203,21 +203,73 @@ class SocialMediaScraper:
         }
 
     def _scrape_generic(self, url: str, user_caption: Optional[str] = None) -> Dict[str, Any]:
-        """Bóc tách cho các nền tảng mạng xã hội khác."""
-        domain = urllib.parse.urlparse(url).netloc or "mạng_xã_hội"
-        caption = user_caption or f"Bài viết chia sẻ từ trang {domain}"
+        """Bóc tách cho các bài báo điện tử (VnExpress, Tuổi Trẻ, Thanh Niên...) và website khác."""
+        import html
+        domain = urllib.parse.urlparse(url).netloc or "báo_chí_điện_tử"
+        caption = user_caption or ""
+        source_mode = "CANONICAL_URL_PARSER"
+        notes = "Trích xuất thông tin qua Canonical URL Parser."
+        thumbnail_url = None
+
+        # Thử lấy dữ liệu thời gian thực từ thẻ OpenGraph và Title của bài báo
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": self.DEFAULT_USER_AGENT},
+            )
+            with urllib.request.urlopen(req, timeout=3.5) as res:
+                if res.status == 200:
+                    html_content = res.read(65536).decode("utf-8", errors="ignore")
+                    
+                    # Trích xuất tiêu đề
+                    og_title = re.search(r'<meta\s+property=["\']og:title["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
+                    page_title = og_title.group(1) if og_title else None
+                    if not page_title:
+                        title_tag = re.search(r'<title>(.*?)</title>', html_content, re.IGNORECASE)
+                        page_title = title_tag.group(1) if title_tag else None
+
+                    # Trích xuất mô tả bài báo
+                    og_desc = re.search(r'<meta\s+property=["\']og:description["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
+                    meta_desc = og_desc.group(1) if og_desc else None
+                    if not meta_desc:
+                        desc_tag = re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
+                        meta_desc = desc_tag.group(1) if desc_tag else None
+
+                    # Trích xuất ảnh bài báo
+                    og_img = re.search(r'<meta\s+property=["\']og:image["\']\s+content=["\'](.*?)["\']', html_content, re.IGNORECASE)
+                    if og_img:
+                        thumbnail_url = og_img.group(1)
+
+                    if page_title:
+                        page_title = html.unescape(page_title).strip()
+                        meta_desc = html.unescape(meta_desc).strip() if meta_desc else ""
+                        caption = f"{page_title}. {meta_desc}".strip() if meta_desc else page_title
+                        source_mode = "LIVE_WEB_ARTICLE"
+                        notes = f"Đã bóc tách trực tiếp tiêu đề và mô tả bài viết từ {domain}."
+        except Exception:
+            pass
+
+        # Fallback giải mã slug trong URL nếu offline
+        if not caption:
+            slug_words = [w for w in re.split(r"[/_\-\?\=\&\.]", url) if len(w) > 3 and not w.isdigit()]
+            meaningful = " ".join(slug_words[-7:]) if slug_words else ""
+            if meaningful:
+                caption = f"Bài báo từ {domain}: {meaningful}"
+            else:
+                caption = f"Bài viết chia sẻ từ trang {domain}"
+
         hashtags = [tag.strip() for tag in re.findall(r"#\w+", caption)]
 
         return {
-            "platform": "SOCIAL_WEB",
+            "platform": "ONLINE_NEWSPAPER",
             "url": url,
-            "content_id": "web_item",
-            "metadata_source": "CANONICAL_URL_PARSER",
+            "content_id": "article_item",
+            "metadata_source": source_mode,
             "author_name": domain,
             "caption": caption,
             "hashtags": hashtags,
-            "media_type": "TEXT",
-            "thumbnail_url": None,
+            "media_type": "TEXT_ARTICLE",
+            "thumbnail_url": thumbnail_url,
             "video_duration_sec": None,
             "audio_transcript": None,
             "engagement": {
@@ -225,13 +277,25 @@ class SocialMediaScraper:
                 "likes": 0,
                 "shares": 0,
                 "comments": 0,
-                "virality_score": 0.30,
-                "is_live_scraped": False,
-                "notes": "Số liệu đo lường tiêu chuẩn cho đường dẫn trang web độc lập.",
+                "virality_score": 0.25,
+                "is_live_scraped": source_mode == "LIVE_WEB_ARTICLE",
+                "notes": f"Bài viết từ báo chí trực tuyến ({domain}).",
             },
-            "notes": "Trích xuất thông tin qua Canonical URL Parser.",
+            "notes": notes,
             "published_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
         }
+
+    def extract_url_content(self, url: str) -> str:
+        """
+        Tiện ích giải mã URL thành nội dung văn bản hoàn chỉnh để đưa vào mô hình AI.
+        """
+        clean = url.strip()
+        if not (clean.startswith("http://") or clean.startswith("https://")):
+            return clean
+
+        res = self.scrape_url(clean)
+        caption = res.get("caption") or ""
+        return caption if caption.strip() else clean
 
 
 social_scraper = SocialMediaScraper()

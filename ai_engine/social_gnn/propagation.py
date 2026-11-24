@@ -100,6 +100,15 @@ class CascadePropagationAnalyzer:
 
         # Tính toán R0 dựa trên độ nhạy cảm của chủ đề
         clean_lower = caption_or_topic.lower()
+        if caption_or_topic.strip().startswith(("http://", "https://")):
+            try:
+                from app.services.social_scraper import social_scraper
+                extracted = social_scraper.extract_url_content(caption_or_topic.strip())
+                if extracted:
+                    clean_lower = extracted.lower()
+            except Exception:
+                pass
+
         if any(k in clean_lower for k in ["vỡ đập", "vỡ đê", "thủy điện", "chết người", "sụp đổ", "cháy lớn", "động đất", "chiến tranh"]):
             r0 = 2.85
             virality_speed = 210.0  # nodes/h

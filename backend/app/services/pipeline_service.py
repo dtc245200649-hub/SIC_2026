@@ -36,6 +36,7 @@ from ai_engine.xai.text_explainer import TextXAIExplainer
 from ai_engine.xai.visual_explainer import VisualXAIExplainer
 from ai_engine.xai.fusion_explainer import MultimodalXAIOrchestrator
 from ai_engine.fusion.multimodal_model import MultimodalMisinformationDetector
+from app.services.social_scraper import social_scraper
 
 
 class SingleModalPipelineService:
@@ -115,6 +116,15 @@ class SingleModalPipelineService:
         3. Phân tích trọng số từ khóa then chốt (Token Importance).
         4. Lưu vết CSDL (AnalysisSession, ExtractedFeature, AnalysisResult).
         """
+        # Tự động trích xuất nội dung nếu đầu vào là đường link bài báo (VnExpress, Tuổi Trẻ...) hoặc MXH
+        raw_input = text.strip()
+        if raw_input.startswith(("http://", "https://")):
+            extracted = social_scraper.extract_url_content(raw_input)
+            if extracted and len(extracted) > 5:
+                text = extracted
+                if not title:
+                    title = f"Nội dung từ URL: {raw_input[:55]}..."
+
         clean_text = VietnameseTextPreprocessor.clean_text(text)
         if len(clean_text) < 5:
             raise HTTPException(

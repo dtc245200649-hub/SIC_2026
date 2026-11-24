@@ -377,13 +377,12 @@ export const VerificationXaiPage: React.FC = () => {
             return (
               <span
                 key={idx}
-                className={`px-1.5 py-0.5 rounded font-bold mx-0.5 border ${
-                  evaluationResult.statusType === 'FAKE'
-                    ? 'bg-rose-100 text-rose-800 border-rose-300'
-                    : evaluationResult.statusType === 'VERIFIED'
+                className={`px-1.5 py-0.5 rounded font-bold mx-0.5 border ${evaluationResult.statusType === 'FAKE'
+                  ? 'bg-rose-100 text-rose-800 border-rose-300'
+                  : evaluationResult.statusType === 'VERIFIED'
                     ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                     : 'bg-amber-100 text-amber-800 border-amber-300'
-                }`}
+                  }`}
               >
                 {w}
               </span>
@@ -529,8 +528,17 @@ export const VerificationXaiPage: React.FC = () => {
               onChange={(e) => setInputText(e.target.value)}
               rows={4}
               className="w-full text-xs sm:text-sm font-medium text-slate-800 p-3 bg-slate-50/70 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 leading-relaxed resize-none"
-              placeholder="Dán hoặc nhập bất kỳ nội dung, bài đăng mạng xã hội, tin đồn hoặc phát biểu cần kiểm chứng vào đây..."
+              placeholder="Dán hoặc nhập bất kỳ nội dung, bài đăng mạng xã hội, tin đồn hoặc dán link bài báo (VnExpress, Tuổi Trẻ,...) để kiểm chứng..."
             />
+
+            {inputText.trim().startsWith('http') && (
+              <div className="mt-2.5 px-3 py-1.5 rounded-lg bg-sky-50 border border-sky-200/80 text-sky-900 text-xs font-medium flex items-center gap-2">
+                <ExternalLink className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                <span>
+                  Phát hiện liên kết bài báo/website: Hệ thống sẽ tự động bóc tách tiêu đề, nội dung và thẻ OpenGraph để giám định.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Box 2: Hình ảnh kiểm tra */}
@@ -647,19 +655,18 @@ export const VerificationXaiPage: React.FC = () => {
 
                     <div className="flex items-center justify-between pt-1">
                       <span
-                        className={`text-xs font-bold flex items-center gap-1 ${
-                          evidence.nli_verdict === 'REFUTES'
-                            ? 'text-rose-600'
-                            : evidence.nli_verdict === 'SUPPORTS'
+                        className={`text-xs font-bold flex items-center gap-1 ${evidence.nli_verdict === 'REFUTES'
+                          ? 'text-rose-600'
+                          : evidence.nli_verdict === 'SUPPORTS'
                             ? 'text-emerald-700'
                             : 'text-amber-700'
-                        }`}
+                          }`}
                       >
                         • {evidence.nli_verdict === 'REFUTES'
                           ? 'Bác bỏ thông tin nghi vấn'
                           : evidence.nli_verdict === 'SUPPORTS'
-                          ? 'Khẳng định đúng sự thật'
-                          : 'Liên quan / Cần theo dõi'}
+                            ? 'Khẳng định đúng sự thật'
+                            : 'Liên quan / Cần theo dõi'}
                       </span>
 
                       <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded">
@@ -714,28 +721,27 @@ export const VerificationXaiPage: React.FC = () => {
           <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide mb-2">
               <span
-                className={`w-2 h-2 rounded-full animate-pulse ${
-                  evaluationResult.statusType === 'FAKE'
-                    ? 'bg-rose-600'
-                    : evaluationResult.statusType === 'VERIFIED'
+                className={`w-2 h-2 rounded-full animate-pulse ${evaluationResult.statusType === 'FAKE'
+                  ? 'bg-rose-600'
+                  : evaluationResult.statusType === 'VERIFIED'
                     ? 'bg-emerald-600'
                     : 'bg-amber-600'
-                }`}
+                  }`}
               />
               <span
                 className={
                   evaluationResult.statusType === 'FAKE'
                     ? 'text-rose-600'
                     : evaluationResult.statusType === 'VERIFIED'
-                    ? 'text-emerald-700'
-                    : 'text-amber-700'
+                      ? 'text-emerald-700'
+                      : 'text-amber-700'
                 }
               >
                 {evaluationResult.statusType === 'FAKE'
                   ? 'KẾT LUẬN: CẢNH BÁO TIN SAI LỆCH (TIN GIẢ)'
                   : evaluationResult.statusType === 'VERIFIED'
-                  ? 'KẾT LUẬN: THÔNG TIN XÁC THỰC (TIN THẬT)'
-                  : 'KẾT LUẬN: CHƯA ĐỦ DẪN CHỨNG CHÍNH THỨC'}
+                    ? 'KẾT LUẬN: THÔNG TIN XÁC THỰC (TIN THẬT)'
+                    : 'KẾT LUẬN: CHƯA ĐỦ DẪN CHỨNG CHÍNH THỨC'}
               </span>
             </div>
 
@@ -743,13 +749,12 @@ export const VerificationXaiPage: React.FC = () => {
               <div>
                 <div className="flex items-baseline gap-2">
                   <span
-                    className={`text-4xl font-black tracking-tight ${
-                      evaluationResult.statusType === 'FAKE'
-                        ? 'text-rose-600'
-                        : evaluationResult.statusType === 'VERIFIED'
+                    className={`text-4xl font-black tracking-tight ${evaluationResult.statusType === 'FAKE'
+                      ? 'text-rose-600'
+                      : evaluationResult.statusType === 'VERIFIED'
                         ? 'text-emerald-700'
                         : 'text-amber-600'
-                    }`}
+                      }`}
                   >
                     {evaluationResult.verdictScore}%
                   </span>
@@ -810,9 +815,8 @@ export const VerificationXaiPage: React.FC = () => {
                 >
                   <span className="font-bold text-slate-900">"{item.word}"</span>
                   <span
-                    className={`text-[11px] font-semibold ${
-                      evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
-                    }`}
+                    className={`text-[11px] font-semibold ${evaluationResult.statusType === 'FAKE' ? 'text-rose-600' : 'text-slate-600'
+                      }`}
                   >
                     {item.meaning}
                   </span>
