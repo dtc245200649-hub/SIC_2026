@@ -36,6 +36,7 @@ export const App: React.FC = () => {
 
           {/* Tab 2: Kiểm chứng & XAI (Image 2) */}
           <Route path="kiem-chung" element={<VerificationXaiPage />} />
+          <Route path="verification" element={<VerificationXaiPage />} />
           <Route path="checker" element={<VerificationXaiPage />} />
           <Route path="analysis" element={<VerificationXaiPage />} />
           <Route path="analysis/multimodal" element={<VerificationXaiPage />} />
@@ -46,7 +47,9 @@ export const App: React.FC = () => {
 
           {/* Tab 3: Lan truyền (Image 3) */}
           <Route path="lan-truyen" element={<PropagationGnnPage />} />
+          <Route path="propagation" element={<PropagationGnnPage />} />
           <Route path="social-graph" element={<PropagationGnnPage />} />
+          <Route path="gnn" element={<PropagationGnnPage />} />
 
           {/* Tab 4: Cơ sở Tri thức (Image 4) */}
           <Route path="tri-thuc" element={<KnowledgeBasePage />} />

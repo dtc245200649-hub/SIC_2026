@@ -591,7 +591,7 @@ export const VerificationXaiPage: React.FC = () => {
               </span>
               <button
                 onClick={() =>
-                  navigate('/propagation', {
+                  navigate('/lan-truyen', {
                     state: {
                       topic: inputText.trim(),
                       fromAnalysis: true,

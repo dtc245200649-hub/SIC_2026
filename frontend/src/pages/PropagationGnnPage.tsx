@@ -318,7 +318,7 @@ export const PropagationGnnPage: React.FC = () => {
               <span>Đồng bộ lại</span>
             </button>
             <Link
-              to="/fact-check"
+              to="/kiem-chung"
               className="text-xs font-bold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-200 transition-colors whitespace-nowrap"
             >
               ← Xem bên Kiểm chứng
