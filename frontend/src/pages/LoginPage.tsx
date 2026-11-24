@@ -245,7 +245,7 @@ export const LoginPage: React.FC = () => {
               <span className="text-slate-600 font-medium">Chế độ trình diễn đồ án:</span>
               <button
                 type="button"
-                onClick={() => handleFillDemo('phequan@gmail.com', 'Admin@123456')}
+                onClick={() => handleFillDemo('phequan@gmail.com', '@AQuan24')}
                 className="text-sky-800 hover:text-sky-950 font-black cursor-pointer underline"
               >
                 Điền tài khoản Demo

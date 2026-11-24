@@ -35,7 +35,7 @@ def seed_initial_data(db: Session) -> None:
             "username": "phequan23",
             "email": "phequan@gmail.com",
             "full_name": "Quản Trị Viên Hệ Thống",
-            "password": "Admin@123456",
+            "password": "@AQuan24",
             "is_superuser": True,
             "roles": [role_objs["Admin"], role_objs["Analyst"]],
         },
