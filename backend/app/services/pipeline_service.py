@@ -3,6 +3,7 @@ import shutil
 from datetime import datetime, timezone
 from typing import Optional
 from fastapi import HTTPException, UploadFile, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -155,8 +156,9 @@ class SingleModalPipelineService:
 
         # 4. Lưu phiên vào CSDL
         now = datetime.now(timezone.utc)
+        user_id = user.id if user else (db.scalar(select(User.id).limit(1)) or 1)
         session = AnalysisSession(
-            user_id=user.id,
+            user_id=user_id,
             title=session_title,
             status="COMPLETED",
             primary_modality="TEXT",
@@ -261,8 +263,9 @@ class SingleModalPipelineService:
         xai_report = visual_explainer.explain_image(saved_path)
 
         now = datetime.now(timezone.utc)
+        user_id = user.id if user else (db.scalar(select(User.id).limit(1)) or 1)
         session = AnalysisSession(
-            user_id=user.id,
+            user_id=user_id,
             title=f"Phân tích ảnh: {file.filename}",
             status="COMPLETED",
             primary_modality="IMAGE",
@@ -352,8 +355,9 @@ class SingleModalPipelineService:
         keyframes = video_proc.extract_keyframes(saved_path)
 
         now = datetime.now(timezone.utc)
+        user_id = user.id if user else (db.scalar(select(User.id).limit(1)) or 1)
         session = AnalysisSession(
-            user_id=user.id,
+            user_id=user_id,
             title=f"Phân tích Video: {file.filename}",
             status="COMPLETED",
             primary_modality="VIDEO",
@@ -446,8 +450,9 @@ class SingleModalPipelineService:
         stt_result = audio_proc.transcribe(saved_path)
 
         now = datetime.now(timezone.utc)
+        user_id = user.id if user else (db.scalar(select(User.id).limit(1)) or 1)
         session = AnalysisSession(
-            user_id=user.id,
+            user_id=user_id,
             title=f"Phân tích Âm thanh: {file.filename}",
             status="COMPLETED",
             primary_modality="AUDIO",
@@ -562,8 +567,9 @@ class SingleModalPipelineService:
         now = datetime.now(timezone.utc)
         session_title = title or (clean_text[:60] + "..." if clean_text else f"Đa phương thức: {file_name or 'Nội dung'}")
 
+        user_id = user.id if user else (db.scalar(select(User.id).limit(1)) or 1)
         session = AnalysisSession(
-            user_id=user.id,
+            user_id=user_id,
             title=session_title,
             status="COMPLETED",
             primary_modality="MULTIMODAL",

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_current_user_optional, get_db
 from app.models.user import User
 from app.models.analysis import AnalysisSession, AnalysisResult
 from app.schemas.analysis import (
@@ -26,7 +26,7 @@ router = APIRouter()
 )
 def analyze_text(
     payload: TextAnalysisRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     return SingleModalPipelineService.analyze_text(
@@ -45,7 +45,7 @@ def analyze_text(
 )
 def analyze_image(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     return SingleModalPipelineService.analyze_image(
@@ -63,7 +63,7 @@ def analyze_image(
 )
 def analyze_video(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     return SingleModalPipelineService.analyze_video(
@@ -81,7 +81,7 @@ def analyze_video(
 )
 def analyze_audio(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     return SingleModalPipelineService.analyze_audio(
@@ -101,7 +101,7 @@ def analyze_multimodal(
     text: Optional[str] = Form(None),
     title: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     if not text and not file:
@@ -125,7 +125,7 @@ def analyze_multimodal(
 )
 def explain_xai(
     payload: XAIExplainRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     orchestrator = MultimodalXAIOrchestrator()
     return orchestrator.generate_explanation_report(
@@ -145,7 +145,7 @@ def explain_xai(
 def get_analysis_history(
     limit: int = 20,
     offset: int = 0,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     stmt = (
