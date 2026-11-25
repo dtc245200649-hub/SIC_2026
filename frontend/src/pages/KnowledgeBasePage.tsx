@@ -36,6 +36,7 @@ export const KnowledgeBasePage: React.FC = () => {
   const [syncingRss, setSyncingRss] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<EvidenceItem | null>(null);
   const [totalDocs, setTotalDocs] = useState(142600);
   const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>([]);
 
@@ -589,10 +590,17 @@ export const KnowledgeBasePage: React.FC = () => {
 
               {/* Title & Snippet */}
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
-                  {doc.title}
-                </h3>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm sm:text-base font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center gap-1.5 group cursor-pointer"
+                  title="Nhấp để truy cập xem bài báo gốc"
+                >
+                  <span className="group-hover:underline">{doc.title}</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
+                </a>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                   {doc.snippet}
                 </p>
               </div>
@@ -606,10 +614,126 @@ export const KnowledgeBasePage: React.FC = () => {
                   "{doc.truth_snippet}"
                 </p>
               </div>
+
+              {/* Card Action Footer */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setViewingDoc(doc)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition-colors cursor-pointer"
+                    title="Xem toàn văn bài viết và đoạn trích sự thật trong CSDL"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-slate-600" />
+                    <span>Xem bài trong dữ liệu</span>
+                  </button>
+
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold transition-colors cursor-pointer"
+                    title="Mở bài báo gốc trên trang nguồn trong tab mới"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Truy cập bài báo gốc ↗</span>
+                  </a>
+                </div>
+
+                <span className="text-[11px] font-semibold text-slate-500">
+                  Độ tin cậy: <span className="font-bold text-emerald-600">{(doc.reliability_score * 100).toFixed(0)}%</span>
+                </span>
+              </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Modal: View Full Evidence Document from Data */}
+      {viewingDoc && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 text-xs space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded border ${viewingDoc.category_color}`}>
+                    {viewingDoc.category_badge}
+                  </span>
+                  <span className="font-bold text-slate-700">
+                    {viewingDoc.source_name} • {viewingDoc.source_domain}
+                  </span>
+                  {viewingDoc.is_new_linked && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-violet-100 text-violet-800 border border-violet-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-pulse" />
+                      Dữ liệu mới liên kết
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+                  {viewingDoc.title}
+                </h3>
+                <div className="text-[11px] text-slate-500">
+                  Thời gian: {viewingDoc.published_date} • Độ tin cậy nguồn: {(viewingDoc.reliability_score * 100).toFixed(0)}%
+                </div>
+              </div>
+              <button
+                onClick={() => setViewingDoc(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Nội dung tóm tắt & toàn văn bài báo */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                1. Tóm tắt nội dung bài báo trong CSDL:
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                {viewingDoc.snippet}
+              </p>
+            </div>
+
+            {/* Đoạn trích sự thật đối chứng */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wide flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>2. Đoạn trích sự thật đối chứng (Ground Truth):</span>
+              </h4>
+              <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-xl">
+                <p className="text-xs sm:text-sm font-medium text-slate-900 italic leading-relaxed">
+                  "{viewingDoc.truth_snippet}"
+                </p>
+              </div>
+            </div>
+
+            {/* Metadata & Actions */}
+            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="text-[11px] text-slate-500 truncate max-w-sm">
+                Đường dẫn gốc: <span className="text-blue-600 underline font-mono">{viewingDoc.url}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={viewingDoc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Truy cập bài báo gốc ↗</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setViewingDoc(null)}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal: Add New Evidence Document */}
       {showAddModal && (
