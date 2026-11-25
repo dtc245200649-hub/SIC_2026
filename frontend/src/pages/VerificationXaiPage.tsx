@@ -357,9 +357,9 @@ export const VerificationXaiPage: React.FC = () => {
       } else {
         // TRƯỜNG HỢP: CHƯA CÓ BÀI BÁO NÀO TRONG KHO DỮ LIỆU ĐỐI CHỨNG
         finalStatus = 'UNVERIFIED';
-        finalLabel = 'Chưa đủ dẫn chứng trong Kho Tri thức';
-        finalSummary = 'Kho dữ liệu 1,210+ bài báo chính thống hiện chưa tìm thấy văn bản hoặc thông cáo chính thức nào về nội dung này. Hệ thống khuyến nghị thận trọng, không chia sẻ cho đến khi có xác nhận từ cơ quan có thẩm quyền.';
-        displayScore = 0;
+        finalLabel = 'Nghi vấn / Chưa đủ dẫn chứng đối soát';
+        finalSummary = 'Kho dữ liệu 1,210+ bài báo chính thống (trong 24,850+ tin toàn hệ thống) chưa ghi nhận thông cáo chính thức nào về nội dung này. Hệ thống khuyến nghị thận trọng, không chia sẻ cho đến khi có xác nhận từ cơ quan có thẩm quyền.';
+        displayScore = Math.max(40, Math.min(60, confPct || 50));
         crossInconsistency = 0.35;
         gradcamConclusionText = selectedImage ? 'Hình ảnh chưa có tư liệu đối chứng trong Kho Tri thức.' : 'Chờ ảnh đính kèm để phân tích Vision Transformer.';
       }
@@ -1041,31 +1041,32 @@ export const VerificationXaiPage: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      {evaluationResult.statusType === 'UNVERIFIED' ? (
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-3xl font-black text-amber-600">
-                            0 / 1,210
-                          </span>
-                          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                            Căn cứ đối chứng
-                          </span>
-                        </div>
-                      ) : (
-                        <span
-                          className={`text-4xl font-black tracking-tight ${
-                            evaluationResult.statusType === 'FAKE'
-                              ? 'text-rose-600'
-                              : 'text-emerald-700'
-                          }`}
-                        >
-                          {evaluationResult.verdictScore}%
-                        </span>
-                      )}
+                    <div className="flex flex-wrap items-baseline gap-2.5">
+                      <span
+                        className={`text-4xl font-black tracking-tight ${
+                          evaluationResult.statusType === 'FAKE'
+                            ? 'text-rose-600'
+                            : evaluationResult.statusType === 'VERIFIED'
+                              ? 'text-emerald-700'
+                              : 'text-amber-600'
+                        }`}
+                      >
+                        {evaluationResult.verdictScore}%
+                      </span>
                       <span className="text-sm font-extrabold text-slate-900">
                         {evaluationResult.verdictLabel}
                       </span>
+                      {evaluationResult.statusType === 'UNVERIFIED' && (
+                        <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">
+                          0 / 1,210 tài liệu Ground Truth
+                        </span>
+                      )}
                     </div>
+                    {evaluationResult.statusType === 'UNVERIFIED' && (
+                      <div className="text-[11px] text-amber-700 mt-1 font-medium">
+                        Kho Tri thức 1,210+ bài báo chính thống chưa tìm thấy căn cứ đối chứng (quét từ 24,850+ tin trên toàn hệ thống).
+                      </div>
+                    )}
                   </div>
                   <p className="text-xs text-slate-600 max-w-xs leading-relaxed">
                     {evaluationResult.verdictSummary}
