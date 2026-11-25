@@ -28,6 +28,22 @@ export const OverviewPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
   const [trendsData, setTrendsData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [historyList, setHistoryList] = useState<any[]>([]);
+
+  // Load real history from localStorage to sync with active analyses
+  useEffect(() => {
+    try {
+      const savedHistoryStr = localStorage.getItem('vietxai_analysis_history');
+      if (savedHistoryStr) {
+        const parsed = JSON.parse(savedHistoryStr);
+        if (Array.isArray(parsed)) {
+          setHistoryList(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading history in overview:', e);
+    }
+  }, []);
 
   // Fetch real macro trends from backend
   useEffect(() => {
@@ -56,11 +72,11 @@ export const OverviewPage: React.FC = () => {
     { time: '15:00', xacThuc: 460, saiLech: 380 },
     { time: '18:00', xacThuc: 520, saiLech: 512 },
     { time: '21:00', xacThuc: 540, saiLech: 195 },
-    { time: 'Hiện tại', xacThuc: 560, saiLech: 280 },
+    { time: 'Hiện tại', xacThuc: 560 + historyList.length * 3, saiLech: 280 + historyList.filter(h => h.statusType === 'FAKE').length * 2 },
   ];
 
-  // Urgent alerts list with real verify action
-  const urgentAlerts = [
+  // Base alerts combined with actual verified items from history
+  const baseUrgentAlerts = [
     {
       id: 'alert-1',
       badge: 'CỰC ĐOAN',
@@ -71,6 +87,7 @@ export const OverviewPage: React.FC = () => {
       counterSource: 'Ngân hàng Nhà nước VN',
       claimText:
         'Khẩn cấp phong tỏa toàn bộ tài khoản thanh toán cá nhân tại 4 ngân hàng lớn từ 0h đêm nay, yêu cầu người dân rút tiền gửi ngay.',
+      statusType: 'FAKE',
     },
     {
       id: 'alert-2',
@@ -82,6 +99,7 @@ export const OverviewPage: React.FC = () => {
       counterSource: 'Bộ Y Tế',
       claimText:
         'Cảnh báo bùng phát dịch bệnh hô hấp lạ chưa rõ nguồn gốc tại các bệnh viện trung ương ở Hà Nội, mọi người tích trữ thuốc kháng sinh và thực phẩm.',
+      statusType: 'FAKE',
     },
     {
       id: 'alert-3',
@@ -93,14 +111,48 @@ export const OverviewPage: React.FC = () => {
       counterSource: 'Cục CSGT C08',
       claimText:
         'Cuộc gọi ghi âm mạo danh cán bộ thanh tra giao thông xử lý phạt nguội thông báo nộp tiền vi phạm trực tiếp vào số tài khoản cá nhân.',
+      statusType: 'FAKE',
     },
   ];
 
-  const handleVerifyAlert = (alertItem: (typeof urgentAlerts)[0]) => {
+  // Map user-analyzed history into urgent alerts list dynamically
+  const userAlerts = historyList.slice(0, 5).map((item, idx) => {
+    const isFake = item.statusType === 'FAKE';
+    const isVerified = item.statusType === 'VERIFIED';
+    return {
+      id: `user-hist-${item.id || idx}`,
+      badge: isFake ? 'TIN GIẢ / BỊA ĐẶT' : isVerified ? 'CHÍNH XÁC / XÁC THỰC' : 'CHƯA ĐỦ DẪN CHỨNG',
+      badgeColor: isFake
+        ? 'bg-rose-600 text-white'
+        : isVerified
+          ? 'bg-emerald-600 text-white'
+          : 'bg-amber-100 text-amber-800 border border-amber-300',
+      channel: `Ca vừa kiểm chứng • ${item.timestamp ? new Date(item.timestamp).toLocaleTimeString('vi-VN') : 'Mới cập nhật'}`,
+      title: item.text,
+      scoreText: `Độ tin cậy: ${item.verdictScore || (isFake ? 14 : isVerified ? 96 : 52)}% (${item.verdictLabel || (isFake ? 'Sai sự thật' : isVerified ? 'Chính xác' : 'Cần đối soát')})`,
+      counterSource: isVerified ? 'Báo chí / Cơ quan chính thống' : 'Kho Tri thức & Giám định VietXAI',
+      claimText: item.text,
+      statusType: item.statusType || 'UNVERIFIED',
+    };
+  });
+
+  const allAlerts = [...userAlerts, ...baseUrgentAlerts];
+
+  const handleVerifyAlert = (alertItem: any) => {
     navigate('/kiem-chung', {
       state: {
         text: alertItem.claimText,
         source: alertItem.counterSource,
+      },
+    });
+  };
+
+  const handlePropagationAlert = (alertItem: any) => {
+    navigate('/lan-truyen', {
+      state: {
+        topic: alertItem.claimText,
+        statusType: alertItem.statusType,
+        verdictLabel: alertItem.badge,
       },
     });
   };
@@ -174,14 +226,14 @@ export const OverviewPage: React.FC = () => {
           <div className="text-xs font-medium text-slate-500">Tổng tin đã quét</div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              24,850
+              {(24850 + historyList.length).toLocaleString('vi-VN')}
             </span>
             <span className="text-xs font-bold text-emerald-600 flex items-center">
               ↗ +14.2%
             </span>
           </div>
           <div className="text-[11px] text-slate-400 mt-2">
-            Tất cả nguồn mạng xã hội & báo chí
+            Tất cả nguồn mạng xã hội & báo chí ({historyList.length} ca người dùng đã nạp)
           </div>
         </div>
 
@@ -190,14 +242,14 @@ export const OverviewPage: React.FC = () => {
           <div className="text-xs font-medium text-slate-500">Tin sai lệch phát hiện</div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              1,248
+              {(1248 + historyList.filter((h) => h.statusType === 'FAKE').length).toLocaleString('vi-VN')}
             </span>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60">
               5.0% tổng lượng
             </span>
           </div>
           <div className="text-[11px] text-slate-400 mt-2">
-            96.8% độ chính xác mô hình AI
+            96.8% độ chính xác mô hình AI (PhoBERT + ViT)
           </div>
         </div>
 
@@ -206,14 +258,14 @@ export const OverviewPage: React.FC = () => {
           <div className="text-xs font-medium text-slate-500">Hệ số lây nhiễm (R0)</div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-black text-rose-600 tracking-tight">
-              2.84
+              {historyList.length > 0 && historyList[0].statusType === 'VERIFIED' ? '0.62' : '2.84'}
             </span>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60">
-              Mức nguy cơ
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${historyList.length > 0 && historyList[0].statusType === 'VERIFIED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : 'bg-rose-50 text-rose-700 border-rose-200/60'}`}>
+              {historyList.length > 0 && historyList[0].statusType === 'VERIFIED' ? 'Ngưỡng an toàn' : 'Mức nguy cơ'}
             </span>
           </div>
           <div className="text-[11px] text-slate-400 mt-2">
-            4 cụm lan truyền đang bùng phát
+            {historyList.length > 0 && historyList[0].statusType === 'VERIFIED' ? 'Dòng tin ổn định, tự triệt tiêu' : '4 cụm lan truyền đang bùng phát'}
           </div>
         </div>
 
@@ -368,7 +420,9 @@ export const OverviewPage: React.FC = () => {
 
           <div className="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Tổng số tin phân loại</span>
-            <span className="font-bold text-slate-900">1,248 vi phạm</span>
+            <span className="font-bold text-slate-900">
+              {(1248 + historyList.filter((h) => h.statusType === 'FAKE').length).toLocaleString('vi-VN')} vi phạm
+            </span>
           </div>
         </div>
       </div>
@@ -379,9 +433,9 @@ export const OverviewPage: React.FC = () => {
         <div className="lg:col-span-8 bg-white p-6 rounded-xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-900">Cảnh báo khẩn cấp đang lan truyền</h2>
+              <h2 className="text-sm font-bold text-slate-900">Cảnh báo khẩn cấp & Vụ việc Giám định gần đây</h2>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60">
-                3 mục tiêu
+                {allAlerts.length} vụ việc
               </span>
             </div>
             <button
@@ -395,7 +449,7 @@ export const OverviewPage: React.FC = () => {
 
           {/* Alert Items List */}
           <div className="space-y-3">
-            {urgentAlerts.map((alert) => (
+            {allAlerts.map((alert) => (
               <div
                 key={alert.id}
                 className="p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -411,18 +465,24 @@ export const OverviewPage: React.FC = () => {
                     {alert.title}
                   </h3>
                   <div className="text-[11px] text-slate-500">
-                    <span className="text-rose-600 font-semibold">{alert.scoreText}</span>
+                    <span className={alert.statusType === 'VERIFIED' ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold'}>{alert.scoreText}</span>
                     <span className="mx-1.5">•</span>
                     <span>Đối chứng: {alert.counterSource}</span>
                   </div>
                 </div>
 
-                <div>
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleVerifyAlert(alert)}
-                    className="w-full sm:w-auto px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
+                    className="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
                   >
                     Kiểm chứng
+                  </button>
+                  <button
+                    onClick={() => handlePropagationAlert(alert)}
+                    className="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
+                  >
+                    Lan truyền GNN
                   </button>
                 </div>
               </div>

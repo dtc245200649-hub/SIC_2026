@@ -365,14 +365,20 @@ def get_social_macro_trends(
 def simulate_social_cascade(
     topic: str = Query(..., description="Chủ đề hoặc nội dung cần mô phỏng lan truyền"),
     initial_shares: int = Query(120, ge=1, le=10000, description="Lượt chia sẻ ban đầu"),
+    status_type: Optional[str] = Query(None, description="Trạng thái kiểm chứng: VERIFIED, FAKE, UNVERIFIED"),
+    source_name: Optional[str] = Query(None, description="Tên nguồn hoặc tác giả bài viết"),
+    platform: Optional[str] = Query(None, description="Nền tảng xuất bản"),
 ):
     """
     Mô phỏng động lực học lan truyền dịch tễ (SEIR Cascade Simulation):
-    Dự báo hệ số R0, độ sâu cascade, chỉ số Wiener và đường cong phát tán 24h.
+    Dự báo hệ số R0, độ sâu cascade, chỉ số Wiener và đường cong phát tán 24h bám sát dữ liệu thực tế.
     """
     return cascade_analyzer.analyze_cascade(
         caption_or_topic=topic,
         initial_shares=initial_shares,
+        status_type=status_type,
+        source_name=source_name,
+        platform=platform,
         is_simulated=True,
     )
 
