@@ -225,23 +225,24 @@ export const PropagationGnnPage: React.FC = () => {
       }
 
       // Lấy thông số dịch tễ học SEIR từ backend hoặc ước lượng vi phân Euler
+      const rawPop = data.seir_metrics?.total_population || totalExposure;
       const seirData = data.seir_metrics || {
-        total_population: totalExposure * 4 || 80000,
-        susceptible: Math.round(totalExposure * (effectiveStatus === 'VERIFIED' ? 0.88 : 0.62)),
-        exposed: Math.round(totalExposure * (effectiveStatus === 'VERIFIED' ? 0.06 : 0.23)),
-        infected: Math.round(totalExposure * (effectiveStatus === 'VERIFIED' ? 0.01 : 0.12)),
-        recovered: Math.round(totalExposure * (effectiveStatus === 'VERIFIED' ? 0.05 : 0.03)),
+        total_population: rawPop,
+        susceptible: Math.round(rawPop * (effectiveStatus === 'VERIFIED' ? 0.88 : 0.62)),
+        exposed: Math.round(rawPop * (effectiveStatus === 'VERIFIED' ? 0.06 : 0.23)),
+        infected: Math.round(rawPop * (effectiveStatus === 'VERIFIED' ? 0.01 : 0.12)),
+        recovered: Math.round(rawPop * (effectiveStatus === 'VERIFIED' ? 0.05 : 0.03)),
         beta: Number((r0Val * 0.18).toFixed(3)),
         gamma: 0.18,
         sigma: 0.50,
       };
 
       const trendData = data.time_series_trend && data.time_series_trend.length > 0 ? data.time_series_trend : [
-        { hour: 0, time: '0h', susceptible: 80000, exposed: 200, infected: 100, recovered: 0, fake: 100, real: 10 },
-        { hour: 2, time: '2h', susceptible: 75000, exposed: 1800, infected: 950, recovered: 120, fake: 950, real: 45 },
-        { hour: 6, time: '6h', susceptible: 68000, exposed: 3200, infected: 1400, recovered: 850, fake: 1400, real: 160 },
-        { hour: 12, time: '12h', susceptible: 62000, exposed: 1600, infected: 720, recovered: 2800, fake: 720, real: 320 },
-        { hour: 24, time: '24h', susceptible: 59000, exposed: 400, infected: 120, recovered: 5600, fake: 120, real: 580 },
+        { hour: 0, time: '0h', susceptible: rawPop, exposed: Math.round(rawPop * 0.03), infected: Math.round(rawPop * 0.01), recovered: 0, fake: 100, real: 10 },
+        { hour: 2, time: '2h', susceptible: Math.round(rawPop * 0.90), exposed: Math.round(rawPop * 0.07), infected: Math.round(rawPop * 0.05), recovered: Math.round(rawPop * 0.01), fake: 950, real: 45 },
+        { hour: 6, time: '6h', susceptible: Math.round(rawPop * 0.82), exposed: Math.round(rawPop * 0.10), infected: Math.round(rawPop * 0.08), recovered: Math.round(rawPop * 0.04), fake: 1400, real: 160 },
+        { hour: 12, time: '12h', susceptible: Math.round(rawPop * 0.74), exposed: Math.round(rawPop * 0.06), infected: Math.round(rawPop * 0.04), recovered: Math.round(rawPop * 0.14), fake: 720, real: 320 },
+        { hour: 24, time: '24h', susceptible: Math.round(rawPop * 0.68), exposed: Math.round(rawPop * 0.02), infected: Math.round(rawPop * 0.01), recovered: Math.round(rawPop * 0.25), fake: 120, real: 580 },
       ];
 
       const threatBadge =
@@ -263,27 +264,27 @@ export const PropagationGnnPage: React.FC = () => {
         isSafeR0: isSafe,
         viralitySpeed: speed,
         platformDistribution: platDist,
-        estimatedReach: totalExposure,
+        estimatedReach: seirData.total_population,
         reachSubtext: isSafe
           ? `Tương tác tiếp cận thông thường từ độc giả`
-          : `Ước tính mô hình SEIR: ~${Math.round(totalExposure * 0.38).toLocaleString('vi-VN')} người dùng phơi nhiễm trực tiếp`,
+          : `Ước tính mô hình SEIR: ~${Math.round(seirData.total_population * 0.38).toLocaleString('vi-VN')} người dùng phơi nhiễm trực tiếp`,
         sha256Hash: dynamicHash,
         r0Desc: isSafe
-          ? 'Hệ số R0 < 1.0: Luồng tin tự nhiên, không có nguy cơ bùng phát dịch tin đồn.'
+          ? `Hệ số R0 = ${r0Val} < 1.0: Luồng tin tự nhiên, không có nguy cơ bùng phát dịch tin đồn.`
           : `Ngưỡng an toàn < 1.0 (Vượt ngưỡng ${Math.round((r0Val - 1.0) * 100)}%)`,
         sourceLabel: data.source_label || (isSafe ? 'Nguồn Báo chí / Cơ quan Chính thống' : 'Nguồn tin đồn / Khả nghi ban đầu'),
         sourceHandle: data.source_handle || (isSafe ? `@${sourceName.replace(/\s+/g, '_').toLowerCase()}` : `@tin_don_${caseCode}`),
         sourceType: data.source_type || (isSafe ? 'OFFICIAL_MEDIA' : 'RUMOR_ORIGIN'),
         statusType: effectiveStatus,
         seir: {
-          totalPopulation: seirData.total_population || totalExposure * 4,
-          susceptible: seirData.susceptible || Math.round(totalExposure * 0.7),
-          exposed: seirData.exposed || Math.round(totalExposure * 0.18),
-          infected: seirData.infected || Math.round(totalExposure * 0.08),
-          recovered: seirData.recovered || Math.round(totalExposure * 0.04),
-          beta: seirData.beta || Number((r0Val * 0.18).toFixed(3)),
-          gamma: seirData.gamma || 0.18,
-          sigma: seirData.sigma || 0.50,
+          totalPopulation: seirData.total_population,
+          susceptible: seirData.susceptible,
+          exposed: seirData.exposed,
+          infected: seirData.infected,
+          recovered: seirData.recovered,
+          beta: seirData.beta,
+          gamma: seirData.gamma,
+          sigma: seirData.sigma,
         },
         timeSeriesTrend: trendData,
       });
@@ -904,23 +905,23 @@ export const PropagationGnnPage: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-100 text-xs text-slate-600 font-medium">
                 <div className="flex items-center gap-1.5">
                   <span className={`w-2.5 h-2.5 rounded-full ${propagationData.statusType === 'VERIFIED' ? 'bg-emerald-500' : propagationData.statusType === 'UNVERIFIED' ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                  <span>Nguồn phát tán ban đầu ($F_0$)</span>
+                  <span>Nguồn phát tán (F₀)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <span>Phơi nhiễm ($E$)</span>
+                  <span>Phơi nhiễm (E)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                  <span>Lây nhiễm ($I$)</span>
+                  <span>Lây nhiễm (I)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span>Hồi phục ($R$)</span>
+                  <span>Hồi phục (R)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-500" />
-                  <span>Nguy cơ ($S$)</span>
+                  <span>Có nguy cơ (S)</span>
                 </div>
               </div>
             </div>
