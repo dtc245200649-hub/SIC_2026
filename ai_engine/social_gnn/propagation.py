@@ -82,7 +82,7 @@ class CascadePropagationAnalyzer:
             R += dR
 
         # Chuẩn hóa danh sách các mốc thời gian đại diện phục vụ vẽ đồ thị UI
-        key_hours = [0, 2, 6, 12, 24]
+        key_hours = [0, 1, 2, 4, 6, 8, 12, 16, 20, 24]
         res = [hourly_points[h] for h in key_hours if h in hourly_points]
         return res
 
@@ -176,12 +176,26 @@ class CascadePropagationAnalyzer:
 
         total_nodes = int(num_interactions * 1.5 + (1200 if r0 >= 1.0 else 350))
         total_edges = int(total_nodes * 2.8)
+        total_pop = total_nodes * 12
         simulated_curve = self.simulate_seir_curve(
-            total_population=total_nodes * 12,
+            total_population=total_pop,
             initial_infected=max(5, int(num_interactions * 0.08)),
             r0=r0,
             hours=24,
         )
+
+        peak_step = simulated_curve[2] if len(simulated_curve) > 2 else simulated_curve[0]
+        seir_metrics = {
+            "total_population": total_pop,
+            "susceptible": peak_step.get("susceptible", int(total_pop * 0.85)),
+            "exposed": peak_step.get("exposed", int(total_pop * 0.08)),
+            "infected": peak_step.get("infected", int(total_pop * 0.05)),
+            "recovered": peak_step.get("recovered", int(total_pop * 0.02)),
+            "beta": round(r0 * 0.18, 3),
+            "gamma": 0.18,
+            "sigma": 0.50,
+            "reproduction_number_r0": r0,
+        }
 
         return {
             "total_nodes": total_nodes,
@@ -197,6 +211,7 @@ class CascadePropagationAnalyzer:
             "source_handle": source_handle,
             "source_type": source_type,
             "is_simulated_data": is_simulated,
+            "seir_metrics": seir_metrics,
             "time_series_trend": simulated_curve,
             "analyzed_at": datetime.now(timezone.utc).isoformat(),
         }
