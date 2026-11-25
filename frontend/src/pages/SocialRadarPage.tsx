@@ -300,34 +300,6 @@ export const SocialRadarPage: React.FC = () => {
                 </span>
               </div>
             </div>
-
-            {/* Key Hotspot Regions */}
-            <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs">
-              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                VÙNG ĐIỂM NÓNG TRỌNG TÂM
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-800">Miền Bắc (Hà Nội, Phú Thọ, Lào Cai)</span>
-                <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                  46% Lưu lượng
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-800">Miền Nam (TP. Hồ Chí Minh, Bình Dương)</span>
-                <span className="font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded">
-                  32% Lưu lượng
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-800">Miền Trung &amp; Tây Nguyên (Đà Nẵng, Đắk Lắk)</span>
-                <span className="font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded">
-                  22% Lưu lượng
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 
