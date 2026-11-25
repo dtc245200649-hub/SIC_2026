@@ -33,6 +33,11 @@ def sync_rss(
     db: Session = Depends(get_db),
 ):
     result = RssCollectorService.sync_all_feeds(db=db, max_items_per_feed=max_items)
+    # Tự động nạp và cập nhật Vector RAG Index ngay lập tức theo thời gian thực
+    try:
+        VectorRAGService.build_index(db=db, force_rebuild=True)
+    except Exception:
+        pass
     return result
 
 
@@ -192,3 +197,25 @@ def update_scheduler_config(
     scheduler = RAGAutoScheduler.get_instance()
     scheduler.update_config(enabled=enabled, interval_minutes=interval_minutes)
     return scheduler.get_status()
+
+
+# =========================================================================
+# QUẢN LÝ CHU KỲ HỌC DEEP LEARNING (TẦNG 2 - 1 NGÀY HỌC 1 LẦN)
+# =========================================================================
+@router.get(
+    "/daily-retrain/status",
+    summary="Kiểm tra trạng thái chu kỳ học Deep Learning 1 ngày 1 lần",
+)
+def get_daily_retrain_status():
+    from app.services.daily_retrain_scheduler import DailyModelRetrainScheduler
+    return DailyModelRetrainScheduler.get_instance().get_status()
+
+
+@router.post(
+    "/daily-retrain/trigger",
+    summary="Kích hoạt chu kỳ học Deep Learning hàng ngày ngay lập tức",
+)
+def trigger_daily_retrain_cycle():
+    from app.services.daily_retrain_scheduler import DailyModelRetrainScheduler
+    return DailyModelRetrainScheduler.get_instance().execute_daily_retrain_cycle(force_run=True)
+

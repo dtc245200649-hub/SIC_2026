@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
     { path: '/', label: 'Tổng quan', badge: 'Dashboard' },
     { path: '/kiem-chung', label: 'Kiểm chứng & XAI', badge: 'XAI' },
     { path: '/lan-truyen', label: 'Lan truyền', badge: 'Lan truyền & Tác động' },
-    { path: '/tri-thuc', label: 'Cơ sở Tri thức', badge: 'Cơ sở Tri thức' },
+    { path: '/tri-thuc', label: 'Cơ Sở Dữ Liệu và Đối Chứng', badge: 'Cơ Sở Dữ Liệu và Đối Chứng' },
     { path: '/giam-sat', label: 'Giám sát MXH', badge: 'Giám sát MXH' },
   ];
 

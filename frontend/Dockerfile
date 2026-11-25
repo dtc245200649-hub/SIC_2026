@@ -29,3 +29,4 @@ EXPOSE 80
 
 # Chạy Nginx ở chế độ tiền cảnh
 CMD ["nginx", "-g", "daemon off;"]
+

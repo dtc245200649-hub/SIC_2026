@@ -13,12 +13,20 @@ from app.api.v1.router import api_v1_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Quản lý vòng đời ứng dụng (Khởi động tác vụ nền RAG Scheduler)."""
+    """Quản lý vòng đời ứng dụng (Khởi động RAG Scheduler thời gian thực & Deep Learning Daily Scheduler)."""
     from app.services.rag_scheduler import RAGAutoScheduler
-    scheduler = RAGAutoScheduler.get_instance()
-    scheduler.start(initial_delay_seconds=5)
+    from app.services.daily_retrain_scheduler import DailyModelRetrainScheduler
+
+    rag_scheduler = RAGAutoScheduler.get_instance()
+    rag_scheduler.start(initial_delay_seconds=5)
+
+    dl_scheduler = DailyModelRetrainScheduler.get_instance()
+    dl_scheduler.start(initial_delay_seconds=10)
+
     yield
-    scheduler.stop()
+
+    rag_scheduler.stop()
+    dl_scheduler.stop()
 
 
 def create_app() -> FastAPI:
