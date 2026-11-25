@@ -88,16 +88,16 @@ class TextXAIExplainer:
 
             # Tính điểm attribution
             if is_suspicious:
-                weight = 0.82 + (len(clean_word) % 8) * 0.02
+                weight = 0.85 + (len(clean_word) % 8) * 0.015
                 token_type = "fake"
                 score_str = f"+{round(weight * 0.45, 2)}"
             elif any(c.isdigit() for c in clean_word):
-                # Con số thường là trọng tâm kiểm chứng (vd: 50 người chết, 100 tỷ)
-                weight = 0.72
-                token_type = "fake"
-                score_str = f"+{round(weight * 0.35, 2)}"
+                # Con số định lượng (ngày tháng, số phiên bản, số liệu)
+                weight = 0.48
+                token_type = "normal"
+                score_str = f"+{round(weight * 0.15, 2)}"
             elif len(clean_word) > 5:
-                weight = 0.45 + (len(clean_word) % 5) * 0.04
+                weight = 0.42 + (len(clean_word) % 5) * 0.03
                 token_type = "normal"
                 score_str = f"+{round(weight * 0.1, 2)}"
             else:

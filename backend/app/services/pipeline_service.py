@@ -146,12 +146,19 @@ class SingleModalPipelineService:
         shap_values = explainer.compute_shap_values(clean_text, top_k=5)
         high_risk_tokens = [t for t in token_attributions if t["weight"] > 0.70]
 
-        # Chuẩn hóa độ tin cậy và quyết định nhãn
-        if len(high_risk_tokens) >= 1:
+        # Chuẩn hóa độ tin cậy và quyết định nhãn dựa trên PhoBERT và trọng số XAI
+        if len(high_risk_tokens) >= 2 or (len(high_risk_tokens) >= 1 and dl_pred.get("predicted_label") == "SAI_SU_THAT"):
             pred_label = "SAI_SU_THAT"
             confidence = max(confidence, 0.88)
+        elif dl_pred.get("predicted_label") == "CHINH_XAC":
+            pred_label = "CHINH_XAC"
+            confidence = max(confidence, 0.85)
+        elif len(high_risk_tokens) == 1:
+            pred_label = "GAY_HIEU_LAM"
+            confidence = max(confidence, 0.72)
         else:
-            confidence = max(confidence, 0.65)
+            pred_label = dl_pred.get("predicted_label", "CAN_KIEM_CHUNG")
+            confidence = max(confidence, 0.75)
 
         uncertainty_val = round(1.0 - abs(confidence - 0.5) * 2.0, 3)
 

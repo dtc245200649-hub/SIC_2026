@@ -353,31 +353,50 @@ class VectorRAGService:
         scores = np.dot(embeddings, q_vec.T).flatten()  # [N]
 
         # Sắp xếp giảm dần theo độ tương đồng
-        top_indices = np.argsort(scores)[::-1][: top_k * 2]
+        top_indices = np.argsort(scores)[::-1][: top_k * 3]
 
         matched_items: List[VerifiedEvidenceItem] = []
         lower_claim = clean_claim.lower()
 
+        import re
+        stopwords = {
+            "các", "những", "người", "được", "rằng", "của", "cho", "với", "theo", "trích",
+            "xuất", "hiện", "này", "trên", "trong", "phải", "không", "như", "đang",
+            "hoặc", "cũng", "ngày", "tháng", "năm", "bài", "viết", "thông", "tin", "thấy",
+            "nhiều", "biết", "liên", "quan", "trang", "báo", "điện", "tử", "hình", "ảnh",
+            "video", "nội", "dung", "tổng", "quan", "mới", "nhất"
+        }
+        claim_words = {
+            w for w in re.findall(r"\b\w{3,}\b", lower_claim)
+            if w not in stopwords and not w.isdigit()
+        }
+
         for idx in top_indices:
             score = float(scores[idx])
-            if score < min_similarity:
-                continue
-
             meta = metadata_list[idx]
             combined_text = (meta["title"] + " " + meta["snippet"]).lower()
+            doc_words = set(re.findall(r"\b\w{3,}\b", combined_text))
+
+            # Kiểm tra độ giao thoa từ khóa thực tế giữa thông tin cần kiểm chứng và bài báo
+            overlap_words = claim_words & doc_words
+            min_overlap = 1 if len(claim_words) <= 2 else 2
+
+            # Chỉ chấp nhận tài liệu có thực sự liên quan đến chủ đề (không khớp lan man)
+            if score < 0.46 or len(overlap_words) < min_overlap:
+                continue
 
             # Xác định NLI:
             # 1. Báo chứa các từ khóa bác bỏ / cảnh báo tin đồn
             is_refute = any(kw in combined_text for kw in REFUTE_KEYWORDS)
-            if is_refute:
+            if is_refute and score >= 0.48:
                 verdict = "REFUTES"
-            elif score >= 0.40:
+            elif score >= 0.58 and len(overlap_words) >= 2:
                 verdict = "SUPPORTS"
             else:
                 verdict = "NOT_ENOUGH_INFO"
 
-            # Tăng nhẹ score hiển thị chuẩn hóa cho UI
-            display_score = round(min(0.99, max(0.40, score + 0.25)), 2)
+            # Điểm độ tương đồng thực tế chuẩn hóa theo cosine similarity
+            display_score = round(min(0.98, max(0.45, score)), 2)
 
             matched_items.append(
                 VerifiedEvidenceItem(
